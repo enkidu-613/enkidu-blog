@@ -1,7 +1,10 @@
 # About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
 
-::github{repo="saicaca/fuwari"}
+这是我的 Python 与 AI 应用工程学习记录，包含 FastAPI、RAG、Agent、LangChain、LangGraph、Dify 和部署实践的教学笔记与示例代码。
+
+学习项目源码：
+
+::github{repo="enkidu-613/study_python"}
 
 > ### Sources of images used in this site
 > - [Unsplash](https://unsplash.com/)
