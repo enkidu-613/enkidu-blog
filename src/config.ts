@@ -16,13 +16,13 @@ export const siteConfig: SiteConfig = {
 		fixed: false,
 	},
 	banner: {
-		enable: false,
-		src: "assets/images/demo-banner.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-		position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
+		enable: true,
+		src: "assets/images/saber-home-banner.jpg",
+		position: "center",
 		credit: {
-			enable: false, // Display the credit text of the banner image
-			text: "", // Credit text to be displayed
-			url: "", // (Optional) URL link to the original artwork or artist's page
+			enable: false,
+			text: "",
+			url: "",
 		},
 	},
 	toc: {
