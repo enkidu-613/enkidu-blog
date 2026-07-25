@@ -6,7 +6,7 @@ tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
 ---
-> 本章目标：你能用一个可运行的 Supervisor + Subagent 最小例子理解多 Agent，并能区分 Subagent、Router、Handoff 三种模式。
+> 本章目标：你能运行一个 Supervisor + Subagent 最小例子，并能区分 Subagent、Router、Handoff 三种模式。
 >
 > 本章不做生产级并发、复杂层级图、跨 Agent 长期记忆或自动把任务拆成多个 Agent。先建立“一个 Agent 已经足够”和“确实该拆分”的判断力。
 
@@ -21,6 +21,8 @@ draft: false
 ## 一句话理解
 
 Multi-Agent 不是“多开几个模型就更聪明”，而是把职责、工具和上下文拆给不同执行单元，再规定谁负责调度、谁负责最后对用户说话。
+
+`Supervisor` 是一种**角色名**，不是新的 Python 类：本章里它就是 `create_agent(...)` 创建出的主 Agent。`Subagent` 同样是一个 Agent 对象，只是被主 Agent 当作工具的内部实现来调用。
 
 ## 先看真实对象长什么样
 
@@ -60,14 +62,22 @@ supervisor = create_agent(
 | --- | --- | --- |
 | `research_agent` | `create_agent(...)` 返回的已编译 Agent 图，可作为一个 Agent 使用 | `ask_research_agent` 内部调用。 |
 | `ask_research_agent` | `@tool` 产生的 LangChain Tool | `supervisor` 可提出对它的 tool call。 |
-| `supervisor` | 主 Agent；`create_agent` 管理它的模型/工具循环和不断累积的 `messages` | API 路由或命令行调用它。 |
+| `supervisor` | 主 Agent；`create_agent` 管理它在**本次 invoke** 中的模型/工具循环和 `messages` | API 路由或命令行调用它。 |
 | `result["messages"][-1].content` | Subagent 最后一条回答文本 | 包装函数把它转成主 Agent 可消费的工具结果。 |
 
 这里没有神秘的“Agent 对 Agent 直接聊天”。Subagent 在 Python 中被包装成主 Agent 的一个 Tool；主 Agent 仍是唯一直接面对用户的角色。
 
 ## 第一关：先跑一个真实的 Subagent 调用
 
-在 `app/routers/langchain_agent.py` 的模型和工具配置可用后，单独建立上面的三个对象。调用的是：
+本章已经把可运行示例放在 `app/multi_agent.py`。它是练习脚本，不是 FastAPI 路由；不要把它直接粘进已有的 `app/routers/langchain_agent.py`，否则会和那里已有的顶层演示混在一起。
+
+先确认 `.env` 中已有 `MODELSCOPE_API_KEY`、`MODEL_NAME` 和 `MODEL_API_URL`，然后从项目根目录运行：
+
+```bash
+poetry run python -m app.multi_agent
+```
+
+文件里的实际调用是：
 
 ```python
 result = supervisor.invoke(
@@ -81,6 +91,8 @@ result = supervisor.invoke(
 print(result["messages"][-1].content)
 ```
 
+为了让你第一次运行一定看得到完整链路，演示中的 supervisor 被明确要求调用一次 `ask_research_agent`，research_agent 也被明确要求调用一次 `search_knowledge_base`。业务代码不必每题都强制调用工具，应按问题是否需要证据决定。
+
 执行链：
 
 ```text
@@ -93,7 +105,11 @@ print(result["messages"][-1].content)
 -> supervisor 组织最终回答
 ```
 
+**检查点：**终端应先出现 `[research_agent 返回的证据]`，再出现 `[supervisor 最终回答]`。前者没有出现，说明模型没有调用 Tool；前者出现但没有来源文本，说明问题不在当前 Chroma 知识库或检索结果不足。
+
 这和第 28 章的 Tool Calling 相同，只是“工具函数内部”又调用了一个 Agent。
+
+**记忆边界：**本示例故意没有设置 `checkpointer`，所以只演示一次 `invoke()` 内的 `messages` 和工具循环。你再次独立执行 `supervisor.invoke(...)` 时，不会自动记住上一轮；要跨轮保留状态，仍需第 28、29 章学过的 `checkpointer + thread_id`。
 
 ## 第二关：三种模式不要混
 
@@ -151,7 +167,18 @@ def transfer_to_support(
 
 `Command` 是 LangGraph 的控制对象；这里的 `update` 写入共享 State。模型发起 tool call 后，工具必须在 `update["messages"]` 中放入 `ToolMessage`，并以 `runtime.tool_call_id` 匹配那次调用；否则消息历史不合法。`active_agent` 的更新让后续调用选择支持角色的配置。
 
-上面是**状态驱动的最小 Handoff 形状**，不是完整实现。若采用“多个 Agent 子图”变体，handoff 工具才会使用 `goto="support_agent"` 和 `graph=Command.PARENT` 跳到父图中的另一个节点，并显式传递触发调用的 `AIMessage` 与对应的 `ToolMessage`；这属于下一阶段的独立主题。
+关键边界：**更新 `active_agent` 不会自动切换 Agent。**后续还必须有模型中间件或 LangGraph 路由读取它，例如：
+
+```python
+def select_prompt(state: HandoffState) -> str:
+    if state.get("active_agent") == "support_agent":
+        return "你是支持角色，负责处理技术问题。"
+    return "你是分诊角色，负责判断该交给谁。"
+```
+
+上面函数本身也不是完整 Handoff；它只展示“谁消费 `active_agent`”。完整实现要么让 middleware 根据它切换 system prompt 和 tools，要么让 LangGraph 条件边据此进入不同 Agent 节点。
+
+上面是**状态驱动的最小 Handoff 形状**，不是完整实现。本章只要求识别它，暂不要求你运行。若采用“多个 Agent 子图”变体，handoff 工具才会使用 `goto="support_agent"` 和 `graph=Command.PARENT` 跳到父图中的另一个节点，并显式传递触发调用的 `AIMessage` 与对应的 `ToolMessage`；这会在后续复杂工作流项目中再做。
 
 ## 第三关：什么时候不该拆
 
@@ -170,7 +197,7 @@ def transfer_to_support(
 
 1. 把 `@tool` 包装函数误认为 Subagent 本体：本体是 `research_agent`，Tool 只是主 Agent 调它的入口。
 2. Subagent 直接返回给用户：在 Supervisor 模式中，Subagent 应返回可验证的中间结果，主 Agent 负责最终回答。
-3. Handoff 时丢掉触发 tool call 的 `AIMessage` 或对应 `ToolMessage`：会破坏消息序列。
+3. Handoff 的消息顺序处理错：状态驱动单 Agent 变体至少需要匹配的 `ToolMessage`；多个 Agent 子图变体还要显式传递触发调用的 `AIMessage`。否则会破坏消息序列。
 4. 用多 Agent 替代权限控制：拆 Agent 不能自动隔离数据库权限、API Key 或高风险动作。
 
 ## 三遍主动练习
@@ -181,7 +208,7 @@ def transfer_to_support(
 
 ### 2. 跟写
 
-保留 `search_knowledge_base`，写一个只负责“查项目代码说明”的 `research_agent` 和 `ask_research_agent`。先打印它返回的文本，再交给 supervisor。
+保留 `search_knowledge_base`，写一个只负责“查项目知识库说明”的 `research_agent` 和 `ask_research_agent`。先打印它返回的文本，再交给 supervisor。这里练的是向量知识库检索，不是源码搜索。
 
 ### 3. 独立重写
 
@@ -189,7 +216,7 @@ def transfer_to_support(
 
 ## 本章边界与检查点
 
-本章只实现 Supervisor + Subagent 最小模式，识别 Router 与 Handoff。下一阶段再用 LangGraph 实现状态、条件边、人工介入与更复杂的工作流。
+本章只实现 Supervisor + Subagent 最小模式，识别 Router 与 Handoff；不要求实现完整 Handoff 图。你已经在第 29 章学过 LangGraph 的 State、节点和条件边，本章只是把它们放回 Multi-Agent 场景中识别。后续复杂工作流项目再把这些部件组合起来。
 
 你能回答下面四条，就算通过：
 
@@ -198,5 +225,6 @@ def transfer_to_support(
 3. Router 与 Handoff 分别改变什么？
 4. 什么情况下宁可用单 Agent？
 
-> 教学方式：具体锚点优先。先运行一个 `create_agent -> @tool 包装 -> create_agent` 的真实调用，再讨论复杂架构。
+5. 如果不配置 `checkpointer`，为什么两次独立 `invoke()` 不会自动共享上一轮对话？
 
+> 教学方式：具体锚点优先。先运行一个 `create_agent -> @tool 包装 -> create_agent` 的真实调用，再讨论复杂架构。
