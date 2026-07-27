@@ -6,8 +6,6 @@ tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
 ---
-# 28. LangChain Agent 工具调用：把手写 Function Calling Loop 交给框架
-
 > 本章目标不是把 Agent 做成生产系统。  
 > 本章目标是：你能看懂 `create_agent(...)` 内部大概替你做了什么，并能把你项目里的知识库搜索函数包装成一个 LangChain Tool。
 
@@ -131,6 +129,37 @@ result = agent.invoke({"messages": [{"role": "user", "content": question}]})
 | 当前知识库工具函数 | `app/tools/knowledge_base.py` | `search_knowledge_base(query, limit)` |
 | 当前手写工具注册表 | `app/tools/registry.py` | `TOOLS` 给模型看，`TOOL_FUNCTIONS` 给后端用 |
 | 当前 LLM 配置方式 | `app/routers/langchain_memory.py` | `ChatDeepSeek(...)` 从 `.env` 读取模型配置 |
+
+---
+
+## 本章新增的包与模块边界
+
+第 15 章已经讲过 `python-dotenv`、`ChatDeepSeek` 与 `.env` 的基本用法，本章只复用它们，不重复展开。本章真正新进入运行链路的是下面两部分：
+
+### `langchain.agents` 和 `langchain.tools`
+
+它们属于 **LangChain 第三方框架**。当前 Poetry 虚拟环境可导入 `langchain 1.3.4`；本项目由 `langchain-deepseek` 间接带入 LangChain 核心能力，若你要让新环境稳定使用 `from langchain.agents import create_agent`，应把实际需要的 `langchain` 依赖明确记录在 Poetry 配置中。
+
+这里从 `langchain.agents` 拿到 `create_agent`，从 `langchain.tools` 拿到 `@tool`。前者把“模型调用、工具执行、继续循环”组装成 Agent；后者把普通 Python 函数变成带名称、参数 schema 和说明的 Tool。它们常用于“模型按需检索知识库后再回答”和“让客服/运营助手调用受控的查询工具”。
+
+它们**不负责**提供大模型、执行数据库权限校验或让模型直接运行任意 Python；模型实例仍由 `ChatDeepSeek(...)` 创建，真正工具逻辑仍在你的函数中，鉴权和参数上限也仍是后端责任。想完全掌控每一步可继续用第 26 章手写 loop；需要显式节点和边时下一章用 LangGraph。
+
+本章要求你会用并能追踪这一小段，不要求阅读 Agent 内部实现：
+
+```python
+from langchain.agents import create_agent
+from langchain.tools import tool
+
+agent = create_agent(model=llm, tools=[search_project_knowledge])
+```
+
+### `langgraph.checkpoint.memory`
+
+它属于项目直接依赖的 **LangGraph 第三方框架**，`pyproject.toml` 的版本边界是 `>=1.2.9,<2.0.0`，当前锁定版本为 `1.2.9`。本章从它拿到 `InMemorySaver`，给 Agent 的 state 按 `thread_id` 保存内存快照。
+
+它常用于开发阶段验证多轮对话、或给短生命周期的内部工具保留同一进程中的会话状态。它**不负责**跨重启持久化、用户身份认证或长期记忆；不要把它当数据库。没有跨调用记忆需求时可以不传 checkpointer；需要重启后保留时，后续应换成数据库型 checkpointer。
+
+本章只要求认识 `checkpointer=InMemorySaver()` 与同一 `thread_id` 的配合；LangGraph 的 State、节点和边在下一章才系统学习。
 
 ---
 
@@ -1380,4 +1409,3 @@ LangChain Agent 版本会用 @tool 包装搜索函数，再传给 create_agent(.
 ```
 
 能做到这四条，就可以进入本章跟写和考试。
-

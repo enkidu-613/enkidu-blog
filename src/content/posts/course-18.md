@@ -321,6 +321,12 @@ class ConnectionManager:
 
 ### FastAPI SSE 新特性（0.135.0+）
 
+### 本节新增的 FastAPI SSE 响应类
+
+这不是新装的第三方包，而是从已经学过的 `fastapi.responses` 取得的响应类：`EventSourceResponse` 负责把生成器按 SSE 协议持续写回客户端，`ServerSentEvent` 把一段数据包装成一个 SSE 事件。它们常用于 AI Token 流和服务器单向通知；不负责客户端向服务器发停止命令、聊天室双向通信或房间广播，那些仍用 WebSocket。
+
+**版本边界**：下面是 FastAPI `0.135.0+` 的 API 形状；当前项目锁定 `fastapi==0.128.8`，此导入尚不可直接运行。现在继续使用项目已有的 `StreamingResponse`；以后升级 FastAPI 后，先实际运行一次 `from fastapi.responses import EventSourceResponse` 再切换。这里要求先能识别两个类的分工，不要求现在改造 AI 路由。
+
 ```python
 from fastapi.responses import EventSourceResponse, ServerSentEvent
 
@@ -582,4 +588,3 @@ WebSocket
 | `app/routers/ai.py` | SSE 流式 AI 对话（现有，对比参考） |
 | `main.py` | 注册路由 `app.include_router(ws_router)` |
 | `md/16_异步编程深入.md` | async/await、asyncio.create_task 前置知识 |
-

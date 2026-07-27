@@ -14,6 +14,33 @@ draft: false
 
 ---
 
+## 本章定位
+
+> **一句话理解**: 模型本身不会保存上一轮对话；所谓“聊天记忆”，是在每次请求前把历史消息列表再次传给模型。
+
+### 本章学到哪里，不学到哪里
+
+- **本章要会**: 用 `list[dict]` 保存 `system`、`user`、`assistant` 三类消息，理解 System Prompt 与完整历史如何进入一次模型请求，并能读懂查看、清空历史的三个路由。
+- **本章暂不要求**: 多用户隔离、数据库持久化、Token 精确计数、历史摘要策略和 LangChain 的自动记忆封装。它们会在后续数据库、上下文管理和 LangChain 章节展开。
+
+### 代码地图
+
+```text
+POST /chat-memory/chat
+    -> 首次请求时加入 system 消息
+    -> chat_history.append(user 消息)
+    -> client.chat.completions.create(messages=chat_history)
+    -> chat_history.append(assistant 回复)
+    -> 返回 reply
+
+GET /chat-memory/history    -> 返回当前列表，方便观察模型实际看到的上下文
+DELETE /chat-memory/history -> 重置列表，下一次聊天会重新加入 system 消息
+```
+
+这是一份**进程内、单会话**教学记忆：它能帮助你看清数据流，但不适合直接作为真实用户聊天系统的存储方案。
+
+---
+
 ## 🔧 准确术语速查
 
 | 术语 | 准确含义 | 本章对应 |
@@ -420,6 +447,13 @@ system_prompt = """你是一个[角色]，擅长[能力]。
 
 ## ✅ 检查点
 
+先用四条理解标准自检：
+
+- [ ] **核心思想**: 能说出“记忆不是模型内部保存，而是应用在下一次请求时重新传入历史”。
+- [ ] **解决问题**: 能解释为什么只发送 `req.message` 会让模型忘记前文。
+- [ ] **为什么不用常见替代方案**: 能说明全局内存列表适合最小演示，但不能替代按用户和会话隔离的数据库存储。
+- [ ] **项目里怎么识别**: 能从 `chat_history.append(...)`、`messages=chat_history` 和两个历史路由找出这条记忆链路。
+
 - [ ] 理解 `chat_history` 是存储在内存中的列表了吗？
 - [ ] 知道 `role` 有三种取值（system/user/assistant）了吗？
 - [ ] 理解为什么要把整个 `chat_history` 发给 AI 了吗？
@@ -434,4 +468,3 @@ system_prompt = """你是一个[角色]，擅长[能力]。
 >
 > 我们将学习如何用 HTML + JavaScript 构建一个聊天界面，
 > 通过 HTTP 请求与后端 API 交互，实现真正的"网页版 AI 聊天机器人"！
-

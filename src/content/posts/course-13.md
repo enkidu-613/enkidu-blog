@@ -10,6 +10,22 @@ draft: false
 
 ---
 
+## 本章学到哪里，不学到哪里
+
+**本章要会**：把已有的向量检索结果变成 LLM 可读的上下文，组成 `检索 -> 拼 Prompt -> 调模型 -> 流式返回` 的手写 RAG 闭环，并能在 `app/routers/rag.py` 找到每一段对应的函数。
+
+**本章不展开**：不重新讲 ChromaDB 入库和切片；不做多轮对话记忆、检索质量评估、重排序或 Agent。后续第 15 章才用 LangChain 对这条手写链做框架封装。
+
+## 准确术语速览
+
+| 术语 | 在本章中的真实含义 | 代码里的落点 |
+|---|---|---|
+| RAG 闭环 | 让“检索到资料”真正影响“模型回答”的完整调用链 | `_semantic_search` -> `build_system_prompt` -> `generate_rag_stream` |
+| 检索结果 | 从向量库命中的、带来源信息的文档片段 | `List[SearchResult]` |
+| Context | 作为依据附加给模型的检索片段，不等于用户问题 | `system_prompt` |
+| System Prompt | 给模型设定回答规则和资料边界的消息 | `build_system_prompt()` 返回值 |
+| 流式生成器 | 一边等待模型输出，一边逐段 `yield` 给客户端的异步函数 | `generate_rag_stream()` |
+
 ## 🗺️ 本章地图
 
 ```
@@ -532,6 +548,13 @@ curl -X POST http://127.0.0.1:8000/rag/chat \
 - [ ] 你能说出 `app/routers/ai.py` 的 `messages` 和 `app/routers/rag.py` 的 `messages` 有什么区别？
 - [ ] 你能用 curl 调通 `POST /rag/chat` 并看到流式返回吗？
 
+## 四条理解标准
+
+- [ ] **核心思想**：RAG 不是“搜到资料”就结束，而是把资料和回答规则一起交给模型。
+- [ ] **解决的问题**：让回答尽量依据私有资料，并能给出来源，而不是只依赖模型原有知识。
+- [ ] **为什么不用普通聊天接口**：普通聊天接口没有自动得到本次检索结果，也没有“找不到资料就拒答”的上下文边界。
+- [ ] **项目中怎么实现**：能按顺序说出 `rag_chat`、`_semantic_search`、`build_system_prompt`、`generate_rag_stream` 各自负责什么。
+
 ---
 
 ## 🚀 下一步预告
@@ -542,4 +565,3 @@ curl -X POST http://127.0.0.1:8000/rag/chat \
 - `RetrievalQA` 链一行代码实现本章所有功能
 - 但手搓一遍再看框架，才能理解框架帮你做了什么、省略了什么
 - 以及什么时候该用手搓，什么时候该用框架
-

@@ -16,6 +16,30 @@ draft: false
 
 ---
 
+## 本章定位
+
+> **一句话理解**: 第 09 章解决“为什么要用向量库”，本章让你亲手看见同一份文本如何绑定 `id`、原文、标签和 Embedding，并被 `collection.query()` 找回来。
+
+### 本章学到哪里，不学到哪里
+
+- **本章要会**: 能区分 `ids`、`documents`、`embeddings`、`metadatas`，知道四个列表必须按下标绑定；能区分 `query_texts` 和 `query_embeddings`，并读懂一次查询返回的数据结构。
+- **本章暂不要求**: 训练或微调向量模型、实现 ChromaDB 内部索引、处理多租户权限，或把检索结果自动交给模型生成答案。RAG 回答链路会在后续章节完成。
+
+### 代码地图
+
+```text
+文本或文档
+    -> get_embedding(text)              # 真实场景由 Embedding 模型生成向量
+    -> collection.add(ids, documents, embeddings, metadatas)
+    -> query_texts 或 query_embeddings
+    -> collection.query(..., n_results, include)
+    -> 读取结果中的 ids / documents / metadatas / distances
+```
+
+第 09 章已经引入 `chromadb`；本章复用该库。`OpenAI` 客户端、`python-dotenv` 和 `os` 只用于“调用已有 Embedding API 并读取密钥”的示例：它们不负责向量检索本身，也不要求在这里理解模型服务的内部实现。
+
+---
+
 ## 🔧 准确术语速查
 
 | 术语 | 准确含义 | 本章对应 |
@@ -487,10 +511,10 @@ bar = "█" * int(sim * 20)
 
 ## ✅ 四条理解标准
 
-- [ ] 思想是什么：ChromaDB 用向量距离帮你找“语义最接近”的文本。
-- [ ] 干什么：把文档、向量、id、metadata 放进集合，再按查询向量找近邻。
-- [ ] 为什么这么干：普通关键字匹配只看字面，向量检索能处理同义、改写和跨语言。
-- [ ] 怎么干：能写出 `get_or_create_collection()`、`collection.add()`、`collection.query()`，并解释 `ids/documents/metadatas/embeddings` 的职责。
+- [ ] **核心思想**: ChromaDB 用向量距离帮你找“语义最接近”的文本。
+- [ ] **解决问题**: 能把文档、向量、id、metadata 放进集合，再按查询向量找近邻。
+- [ ] **为什么不用常见替代方案**: 普通关键字匹配只看字面，向量检索能处理同义、改写和跨语言；但真实语义质量仍取决于 Embedding 模型。
+- [ ] **项目里怎么实现或识别**: 能写出 `get_or_create_collection()`、`collection.add()`、`collection.query()`，并解释 `ids/documents/metadatas/embeddings` 的职责。
 
 ## ⚠️ 常见坑
 
@@ -507,4 +531,3 @@ bar = "█" * int(sim * 20)
 - [ ] FastAPI + Chroma 最小原型
 - [ ] 手搓最小 RAG 闭环
 - [ ] LangChain 集成
-

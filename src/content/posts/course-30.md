@@ -399,6 +399,19 @@ DIFY_API_KEY=app-替换为你的应用密钥
 
 `DIFY_API_BASE` 必须包含 Dify API 页面给出的版本路径，例如 `/v1`。不要把 Web 应用访问地址当作 API Base URL。
 
+### 首次引入库：`httpx`
+
+| 项目 | 说明 |
+| --- | --- |
+| 来源与依赖 | `httpx` 是第三方 Python HTTP 客户端，本项目通过 Poetry 管理；当前代码直接使用 `httpx.AsyncClient`。 |
+| 解决什么问题 | 让 FastAPI 后端通过 HTTP/HTTPS 请求 Dify 的工作流 API。 |
+| 当前对象 | `httpx.AsyncClient` 是异步 HTTP 客户端；`client.post(...)` 发送 POST 请求，返回 `Response` 对象。 |
+| 常见业务用途 | 调用内部微服务、第三方 API、支付或消息服务，也适合在异步 Web 接口中并发访问多个 HTTP 服务。 |
+| 边界与替代方案 | 它只负责网络请求，不负责 Dify 工作流编排、认证授权或结果业务校验；同步代码可考虑 `httpx.Client`，简单同步脚本也可使用 `requests`。 |
+| 本章掌握范围 | 只需掌握 `AsyncClient`、`post`、`raise_for_status`、`response.json()` 和 `async with` 的最小调用链。 |
+
+本章不要求深入学习 `httpx` 的连接池、重试、中间件或流式传输实现。
+
 ```python
 import os
 
@@ -565,4 +578,3 @@ Dify Logs 可能保存完整输入、输出和上下文。本章只上传虚构�
 9. `POST /workflows/run` 的 `inputs`、`user`、`response_mode` 分别负责什么？为什么 HTTP 200 后仍需检查 `data.status`？
 
 > 教学方式：具体锚点优先。先在画布中创建真实节点并测试一次，再为它们命名和解释架构。
-

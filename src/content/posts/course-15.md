@@ -12,6 +12,35 @@ draft: false
 
 ---
 
+## 本章学到哪里，不学到哪里
+
+**本章要会**：认出 LangChain 如何把已有的 RAG 零件封装成 `Document`、`Retriever`、`Prompt`、`LLM` 和 `Chain`，并能看懂 LCEL 的 `|` 数据流，以及 `invoke()` 与 `astream()` 的调用边界。
+
+**本章不展开**：不在这里学习多轮记忆、Agent 工具调用、LangGraph 状态机或生产级评估。它们会复用本章的链和消息对象，但需要单独学习执行流程。
+
+## 本章核心代码地图
+
+```text
+question
+  -> retriever        # 把问题交给检索器，得到 List[Document]
+  -> format_docs      # 把 Document 列表整理成上下文文本
+  -> prompt           # 把 context 和 question 填进消息模板
+  -> llm              # 调用 ChatDeepSeek
+  -> output parser    # 从 AIMessage 中取出需要的文本
+```
+
+LCEL 中常见的写法 `retriever | format_docs | prompt | llm | parser` 不是多个函数同时运行，而是前一步输出自动作为后一步输入的可调用链。
+
+## 本章首次遇到的库与职责
+
+| 库或包 | 类型与当前项目关系 | 本章从它拿到什么 | 常见业务用途与边界 |
+|---|---|---|---|
+| `langchain-deepseek` | Poetry 管理的第三方依赖；当前项目约束为 `>=1.0.1,<2.0.0` | `ChatDeepSeek` | 把 DeepSeek Chat API 包装成 LangChain 可调用模型；它不负责检索、SSE 响应或业务鉴权。 |
+| `langchain-core` | LangChain 的核心抽象包；由集成包依赖进入当前环境 | `Document`、Prompt、Runnable、输出解析器 | 统一“消息、文档、可调用链”的接口；不直接替你提供某一家模型服务。 |
+| `langchain-chroma`、`langchain-huggingface`、`langchain-openai` | 面向不同存储或模型提供商的集成包；示例中用于比较 | `Chroma`、本地 Embedding、OpenAI Chat 适配器 | 实际接哪一种取决于你的向量库和模型提供商，不是所有项目都要同时安装。 |
+
+本章要求你先会识别这些包在流水线中的职责；安装或更换具体集成包时，以 `pyproject.toml` 与对应官方文档为准。
+
 ## 零、本文档阅读指南（ADHD 友好版）
 
 > **如果你现在很急，直接跳到"十、速查表"抄代码。**  
@@ -654,7 +683,7 @@ async for chunk in llm.astream("问题"):
 # LLM 配置
 LLM_MODEL=deepseek-chat
 DEEPSEEK_API_BASE=https://api.deepseek.com/v1
-DEEPSEEK_API_KEY=replace-with-your-key
+DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
 
 # Embedding 配置
 EMBEDDING_MODEL=BAAI/bge-small-zh
@@ -837,7 +866,7 @@ async for chunk in llm.astream("问题"):
 # .env 文件
 LLM_MODEL=deepseek-chat
 DEEPSEEK_API_BASE=https://api.deepseek.com/v1
-DEEPSEEK_API_KEY=replace-with-your-key
+DEEPSEEK_API_KEY=sk-xxx
 EMBEDDING_MODEL=BAAI/bge-small-zh
 CHROMA_DB_PATH=./chroma_db
 ```
@@ -892,3 +921,9 @@ LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-chat")
 - 让 AI 能查天气、算数学
 - 理解 `Tool` → `Agent` → `AgentExecutor` 的架构
 
+## 四条理解标准
+
+- [ ] **核心思想**：LangChain 用统一对象和可调用链组织 RAG 流程，不会凭空替你产生知识库答案。
+- [ ] **解决的问题**：减少手写步骤之间的参数对接和重复胶水代码，让流程更容易组合与替换。
+- [ ] **为什么不是所有地方都直接用 `|`**：只有遵守 Runnable 输入输出约定的对象才能组成 LCEL；HTTP 路由、鉴权和 SSE 响应仍是应用层职责。
+- [ ] **项目中怎么识别**：能从 `app/routers/langchain_rag.py` 找到“检索、格式化 Prompt、调用模型、流式输出”分别落在哪个对象或函数上。

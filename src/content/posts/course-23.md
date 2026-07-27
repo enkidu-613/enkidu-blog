@@ -64,6 +64,31 @@ draft: false
 
 ---
 
+## 本章首次进入运行链路的包
+
+### `langchain-text-splitters`
+
+它是 **Poetry 虚拟环境中的第三方包**；当前环境可导入的版本是 `1.1.2`，导入名写作 `langchain_text_splitters`。本项目的 `pyproject.toml` 目前没有把它列为直接依赖，因此若在一台新机器执行 `poetry install` 后无法导入，应由项目依赖显式记录：
+
+```bash
+poetry add langchain-text-splitters
+```
+
+它解决的是“按文本结构稳定切片”的问题。本章从中拿到 `RecursiveCharacterTextSplitter`：它按你给出的 `separators` 由大到小尝试切分，并提供 `split_text(...)` 与 token 计数相关的构造方式。
+
+常见业务用途只有两类：RAG 文档入库前切分说明书、FAQ 或网页；以及在上传长文件时先把正文拆成可检索块。它**不负责**生成 embedding、写入 Chroma、检索或回答问题；这些分别由后续 Embedding、VectorStore 和 LLM 流程完成。若只是想看最基础的切片循环，可继续使用本章的手搓 `split_text()`；若要按特殊格式或业务字段切分，再自己写 splitter。
+
+本章要求你会认出并使用下面的形状，不要求研究这个包内部如何递归：
+
+```python
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter(...)
+chunk_texts = text_splitter.split_text(text)
+```
+
+---
+
 ## 本章先给结论
 
 你现在项目里有两种切片：
@@ -735,4 +760,3 @@ Chunking 策略
   -> RAG Evaluation
   -> AI Agent 入门
 ```
-

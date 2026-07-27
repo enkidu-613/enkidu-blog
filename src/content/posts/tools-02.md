@@ -33,6 +33,25 @@ draft: false
 
 本章不做：购买域名、Cloudflare Access 登录策略、WAF 深度规则、多台 Fedora 高可用、私网 CIDR 路由。当前的 TEI 已用 Bearer API Key 认证，先把最小安全链路走通。
 
+## 本章工具职责与最小路径
+
+| 工具/对象 | 它负责什么 | 它不负责什么 | 本章掌握边界 |
+| --- | --- | --- | --- |
+| `cloudflared` | 在 Fedora 上维持到 Cloudflare 的 Tunnel 连接 | 不运行 TEI、不生成向量 | 会安装、查看日志和重启服务 |
+| Cloudflare Tunnel | 提供 Fedora 到 Cloudflare 的已认证通道 | 不是域名，也不是 TEI API Key | 会创建远程管理 Tunnel |
+| Published application | 把公网 hostname 映射到本机 `127.0.0.1:8080` | 不替 TEI 校验 Bearer Token | 会配置 `embed.example.com` 路由 |
+| TEI API Key | 认证 Dify 发给 TEI 的请求 | 不认证 Tunnel Connector | 会在本机和公网请求中使用 Bearer Token |
+| Dify Provider | 保存远程 Embedding 服务的地址和模型配置 | 不负责启动 Fedora 服务 | 会填写 URL、API Key、模型名 |
+
+最小调用链：
+
+```text
+Dify -> HTTPS 子域名 -> Cloudflare Tunnel -> cloudflared
+     -> http://127.0.0.1:8080 -> TEI -> GPU Embedding 模型
+```
+
+本章首次出现的 `cloudflared` 是 Cloudflare 提供的 Linux 客户端程序，不是 Python 库；`systemd` 负责守护它，Dify 只负责调用它后面的 HTTPS API。排错时按这条链从左到右或从右到左逐段验证，不把 Tunnel 错误和 TEI 错误混在一起。
+
 ---
 
 ## 第一关：Cloudflare Tunnel 到底做了什么
@@ -412,4 +431,3 @@ curl https://embed.你的域名/info
 - [ ] 你知道为什么 Tunnel 的 Service URL 是 `http://127.0.0.1:8080`，而 Dify 填的是 `https://embed.你的域名`。
 - [ ] 你知道 `1033` 先查 `cloudflared`，`502` 先查 TEI 和本地端口。
 - [ ] 你知道 Fedora 重启后要检查 `tei.service` 与 `cloudflared` 两个服务。
-

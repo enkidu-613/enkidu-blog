@@ -12,6 +12,40 @@ draft: false
 
 ---
 
+## 本章定位
+
+### 本章学到哪里，不学到哪里
+
+- **本章要会**: 说清 SQLite 与 ChromaDB 的分工，追踪一份文档从切片、写入两类存储，到检索后回查 SQLite 的完整数据流；能解释两条关联“绳子”的作用。
+- **本章暂不要求**: 数据库事务补偿、异步任务队列、分布式向量库、多租户隔离和生产级删除同步。这些属于真实系统可靠性设计，不阻塞当前理解 RAG 的最小数据链路。
+
+### 准确术语速查
+
+| 术语 | 准确含义 | 本章代码形态 |
+|------|----------|--------------|
+| 双存储 | 让两种数据库各做擅长的查询，不是把同一套数据随意复制两遍 | SQLite 存业务数据，ChromaDB 存语义检索索引 |
+| Document | 一份完整业务文档 | `Document(id, title, source, content)` |
+| DocumentChunk | 从完整文档切出的可检索片段 | `DocumentChunk(document_id, chunk_index, content)` |
+| `embedding_id` | 两边共同使用的稳定片段标识 | `"doc{doc.id}_chunk{idx}"` |
+| metadata | 与向量一起返回的轻量标签 | `{"document_id": ..., "chunk_index": ...}` |
+| 回查 | 先从 ChromaDB 找候选，再按 ID 到 SQLite 取业务详情 | `metadata -> db.query(...)` |
+
+### 最小链路地图
+
+```text
+写入: 完整文档 -> SQLite Document
+                  -> 切片 -> SQLite DocumentChunk + ChromaDB collection.add(...)
+
+查询: 用户问题 -> Embedding -> ChromaDB query
+                  -> metadata / embedding_id
+                  -> SQLite 回查 DocumentChunk 或 Document
+                  -> 把可靠的原文片段交给后续 RAG 回答
+```
+
+SQLite、SQLAlchemy 和 ChromaDB 都已在前置章节出现；本章不新增库，而是训练你把已有对象串成一条可追踪的数据链路。
+
+---
+
 ## 📖 生活类比：图书馆系统
 
 | 组件 | 类比 | 作用 |
@@ -383,6 +417,13 @@ ChromaDB 负责：
 ---
 
 ## ✅ 检查点
+
+先用四条理解标准自检：
+
+- [ ] **核心思想**: 能说明双存储不是重复造库，而是把“语义找候选”和“可靠保存、回查业务数据”拆给合适的系统。
+- [ ] **解决问题**: 能解释为什么只拿向量检索到的短片段，常常不足以支持完整回答或业务过滤。
+- [ ] **为什么不用常见替代方案**: 能说明 SQLite 不擅长语义近邻检索，ChromaDB 也不应承担完整业务文档、事务和关系查询。
+- [ ] **项目里怎么实现或识别**: 能沿着 `Document`、`DocumentChunk`、`embedding_id`、`metadatas` 和 `collection.query()` 说出写入与回查顺序。
 
 - [ ] 你能解释为什么需要双存储（而不是只用一个数据库）吗？
 - [ ] 你知道存入时数据怎么分流到两个数据库吗？

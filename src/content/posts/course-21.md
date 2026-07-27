@@ -6,7 +6,7 @@ tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
 ---
-# 21. Prompt Engineering 进阶：结构化输出与防御
+ 	# 21. Prompt Engineering 进阶：结构化输出与防御
 
 > **这不是用来"背"的 Prompt 大全，是你桌面上的外挂菜单。**
 > 忘了 `Literal["low","medium","high"]` 怎么写？`Ctrl+F` 搜"Schema"，看类比，抄模板。
@@ -938,4 +938,3 @@ Prompt Engineering 进阶
 | `md/08_提示词工程与聊天记忆.md` | System Prompt 基础、角色设计、Chat History |
 | `md/15_LangChain核心概念.md` | LCEL 链式语法、ChatDeepSeek 配置、推理链 |
 | Swagger UI | 启动后访问 `http://127.0.0.1:8000/docs` → 找到 "Prompt Engineering" 标签 |
-

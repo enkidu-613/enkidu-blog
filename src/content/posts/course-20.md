@@ -119,6 +119,16 @@ poetry add --group dev pytest
 
 FastAPI 的 `TestClient` 依赖 `httpx`，你的项目已经有 `httpx`。
 
+### 本章首次引入的库与模块
+
+| 名称 | 来源与依赖 | 解决什么 / 当前拿到什么 | 常见业务用途 | 不负责什么 / 替代 | 本章掌握边界 |
+|---|---|---|---|---|---|
+| `pytest` | Poetry 的开发依赖；当前锁定 `pytest==9.1.1`。 | 运行测试、发现 `test_...` 函数，并提供 `fixture`、`monkeypatch` 等测试能力。 | 本地回归测试；CI 在合并前自动检查。 | 不会替你设计断言或隔离所有外部服务；标准库 `unittest` 是较基础的替代方案。 | 会用 `poetry run pytest`、写断言和一个 fixture；不学插件开发。 |
+| `httpx` | Poetry 管理的运行时第三方依赖；当前锁定 `httpx==0.28.1`。 | `TestClient` 建立在它的客户端/响应接口上；本章的 `client.get()`、`client.post()`、`client.stream()` 因此能得到状态码、请求头和响应体。 | 调用外部 HTTP API；测试 HTTP/SSE 接口。 | 它不启动 FastAPI 服务，也不替代浏览器验收；简单同步脚本可用 `requests`。 | 本章只会通过 `TestClient` 读取响应和流；异步 `httpx.AsyncClient` 放到调用外部 API 的章节。 |
+| `importlib` | Python 标准库，无需 Poetry 安装。 | `import_module("app.routers.ai")` 按模块路径拿到模块对象，方便 `monkeypatch` 精确替换路由里真正被调用的函数。 | 插件加载；测试中定位需要替换的模块成员。 | 它本身不修改函数也不注册路由；普通固定导入可直接写 `from app.routers import ai`。 | 会认出“字符串模块路径 → 模块对象”；不学习 Python 导入系统内部机制。 |
+
+最小关系：`pytest` 调用测试函数，`TestClient` 通过 `httpx` 模拟 HTTP 客户端；需要替换模块内符号时，再用 `import_module(...)` 找到该模块。
+
 ### 运行所有测试
 
 ```bash
@@ -680,4 +690,3 @@ def test_something():
 5. 再测认证闭环。
 6. 测 WebSocket 的固定收发行为。
 7. 用 mock 测一个 SSE 响应后结束本章。
-

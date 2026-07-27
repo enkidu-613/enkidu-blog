@@ -14,6 +14,48 @@ draft: false
 
 ---
 
+## 本章定位
+
+> **一句话理解**: 向量数据库不替代关系型数据库；它把文本对应的语义向量放进索引，用“距离最近”找出意思最相关的资料。
+
+### 本章学到哪里，不学到哪里
+
+- **本章要会**: 识别文本、Embedding、向量、距离、`documents`、`ids`、`metadatas` 的职责；能够完成一次“写入文本 -> 语义查询 -> 读取结果”的最小 ChromaDB 流程。
+- **本章暂不要求**: 自己训练 Embedding 模型、手写 ANN 索引、为生产库设计分片、权限、备份和评估体系。后续章节会继续讲切片、双存储和 RAG 闭环。
+
+### 最小链路地图
+
+```text
+文档文本
+    -> collection.add(documents, ids, metadatas)
+    -> ChromaDB 为 documents 生成或接收 embeddings
+    -> collection.query(query_texts 或 query_embeddings)
+    -> 取回 ids / documents / metadatas / distances
+    -> 把相关原文交给后续 RAG 回答步骤
+```
+
+### 本章新增依赖: `chromadb`
+
+`chromadb` 是 Poetry 管理的第三方向量数据库客户端库；本项目的依赖范围是 `>=1.5.9,<2.0.0`。它提供 `PersistentClient`、`Collection`、`add()` 和 `query()`，用于本地知识库原型、语义搜索和 RAG 检索实验。
+
+它**不负责**替你训练 Embedding 模型、保存业务的完整关系数据或生成最终答案；这些工作分别由模型服务、SQLite/其他业务数据库和 LLM 完成。本章只要求会调用它的最小存取接口，不要求理解内部索引实现。
+
+```bash
+# 本项目使用 Poetry；若缺少依赖，使用这一条而不是裸 pip install
+poetry add chromadb
+```
+
+最小导入形状：
+
+```python
+import chromadb
+
+client = chromadb.PersistentClient(path="./chroma_db")
+collection = client.get_or_create_collection(name="tech_docs")
+```
+
+---
+
 ## 🔧 准确术语速查
 
 | 术语 | 准确含义 | 本章对应 |
@@ -178,7 +220,7 @@ def cosine_similarity(a, b):
 ### 4.1 安装
 
 ```bash
-pip install chromadb
+poetry add chromadb
 ```
 
 ### 4.2 基础操作
@@ -522,6 +564,13 @@ vector = response.data[0].embedding
 
 ## ✅ 检查点
 
+先用四条理解标准自检：
+
+- [ ] **核心思想**: 能解释向量库按语义距离找内容，而不是按字面字符串匹配。
+- [ ] **解决问题**: 能说明用户换一种说法时，为什么 SQL `LIKE` 可能失效而向量检索仍可能命中。
+- [ ] **为什么不用常见替代方案**: 能说明 ChromaDB 擅长语义召回，但不能替代保存业务完整数据的关系型数据库。
+- [ ] **项目里怎么实现或识别**: 能指出 `PersistentClient`、`get_or_create_collection()`、`add()`、`query()` 在最小原型中的位置。
+
 - [ ] 理解 Embedding 是把文本变成向量的过程了吗？
 - [ ] 知道语义相近的文本，向量距离也近了吗？
 - [ ] 能解释为什么 `LIKE` 找不到但向量检索能找到吗？
@@ -540,4 +589,3 @@ vector = response.data[0].embedding
 > - 完整的 RAG 流程：检索 → 组装 Prompt → 调用 LLM → 返回答案
 >
 > 真正实现"AI 有记忆、能查资料、会推理"的智能助手！
-

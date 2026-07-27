@@ -12,6 +12,30 @@ draft: false
 
 ---
 
+## 本章学到哪里，不学到哪里
+
+**本章要会**：把上下文预算分成“检索资料、总输入、模型输出”三层，并能解释项目为什么在 `build_system_prompt()` 和 `generate_rag_stream()` 分别做拦截。
+
+**本章不展开**：不训练 Tokenizer，不手写模型分词算法，也不做长对话记忆压缩。这里的重点是为当前 RAG 请求做预算和截断；多轮历史如何占用上下文，在后续对话记忆章节学习。
+
+## 本章最小控制链
+
+```python
+context = build_system_prompt(results)  # 先按相关度和 MAX_CONTEXT_TOKENS 装资料
+input_tokens = estimate_tokens(context) + estimate_tokens(question)
+
+if input_tokens > MAX_INPUT_TOKENS:
+    return "输入过长，不能安全发送给模型"
+
+# 调模型时再单独限制回答最多生成多少 Token。
+response = client.chat.completions.create(
+    messages=messages,
+    max_tokens=MAX_OUTPUT_TOKENS,
+)
+```
+
+这不是完整路由代码，而是本章必须看懂的三层顺序：**先限制资料，再限制整次输入，最后限制输出**。
+
 ## 一、什么是上下文窗口
 
 ### 一句话理解
@@ -260,4 +284,3 @@ async def generate_rag_stream(query, results, max_input=MAX_INPUT_TOKENS):
 - [ ] 干什么：防止输入超限、回答失控和资料挤爆模型。
 - [ ] 为什么这么干：不管理 Token 会导致报错、截断、变慢或幻觉。
 - [ ] 怎么干：能解释三层防御，并知道资料片段超限时为什么用 `break`。
-

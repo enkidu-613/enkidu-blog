@@ -30,6 +30,27 @@ draft: false
 
 本章暂时不学：Docker Compose、Kubernetes、多容器编排、镜像构建和 Dify 工作流。它们不阻塞你把本地 Embedding 服务接给 Dify。
 
+## 本章工具职责与最小路径
+
+| 工具/对象 | 它负责什么 | 它不负责什么 | 本章掌握边界 |
+| --- | --- | --- | --- |
+| Podman | 创建、启动、停止和查看容器 | 不负责训练模型，也不负责 Cloudflare 转发 | 会用 `ps`、`logs`、`start`、`stop`、`run` |
+| TEI | 在容器内加载 Embedding 模型并提供 HTTP 接口 | 不负责保存业务数据库，也不负责公网 HTTPS | 会用 `/info` 验证服务 |
+| Podman volume | 保存模型下载缓存 | 不等于容器本身 | 会区分删除容器和删除卷 |
+| NVIDIA CDI | 把宿主机 GPU 交给 Podman 容器 | 不安装 NVIDIA 驱动 | 会用 `nvidia-ctk cdi list` 检查 |
+| Quadlet + systemd | 把容器声明成可自动恢复的系统服务 | 不替代 Podman 的容器命令 | 会配置 `tei.service` 开机启动 |
+
+最小调用链只有四步：
+
+```text
+Podman 启动 TEI 容器
+  -> volume 提供模型缓存
+  -> CDI 提供 NVIDIA GPU
+  -> curl /info 验证 HTTP 服务
+```
+
+本章首次出现的工具都是系统工具或容器运行工具，不是 Python 库；不需要在 Poetry 中安装。你当前的目标是会操作它们和判断故障边界，不要求掌握 Podman 内部实现。
+
 ---
 
 ## 第一关：先分清三个对象
@@ -195,12 +216,12 @@ sudo podman run --rm \
 
 **`stop` 是关服务但保留容器；`start` 是按原配置再开同一个容器；`restart` 是先关再开。**
 
-| 你要做什么 | 命令 | 数据卷会不会丢 |
-| --- | --- | --- |
-| 关闭 TEI 节省显存 | `sudo podman stop tei` | 不会 |
-| 再次启动 | `sudo podman start tei` | 不会 |
-| 重新启动服务 | `sudo podman restart tei` | 不会 |
-| 查看当前状态 | `sudo podman ps -a` | 不涉及 |
+| 你要做什么       | 命令                        | 数据卷会不会丢 |
+| ----------- | ------------------------- | ------- |
+| 关闭 TEI 节省显存 | `sudo podman stop tei`    | 不会      |
+| 再次启动        | `sudo podman start tei`   | 不会      |
+| 重新启动服务      | `sudo podman restart tei` | 不会      |
+| 查看当前状态      | `sudo podman ps -a`       | 不涉及     |
 
 ### 关闭后想再次开启
 
@@ -522,4 +543,3 @@ sudo podman rm tei
 - [ ] 你知道主机重启前后，Quadlet / `tei.service` 在做什么。
 - [ ] 你知道删除 `tei` 容器和删除 `tei-data` 卷的区别。
 - [ ] 你能用 `/info`、日志和 GPU CDI 三个角度确认 TEI 已可接入 Dify。
-

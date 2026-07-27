@@ -14,6 +14,41 @@ draft: false
 
 **`async def` = 可暂停的函数。`await` = "你慢慢来，我先忙别的"。Event Loop = 只一个服务员但能同时服务 10 桌。**
 
+## 本章学到哪里，不学到哪里
+
+**本章要会**：看懂协程、`await`、Task、Event Loop 的调用关系；能在 FastAPI 路由中判断一次操作是异步 I/O、同步阻塞 I/O 还是纯计算，并选对 `await`、`asyncio.gather()` 或线程池。
+
+**本章不展开**：不实现自己的事件循环，不学习多进程、分布式任务队列或 Python GIL 的底层细节。它们会影响性能选择，但不是当前 FastAPI + RAG 项目读懂异步链路的前置条件。
+
+## 准确术语速览
+
+| 术语 | 它是什么 | 最小代码形态 |
+|---|---|---|
+| 协程函数 | 用 `async def` 定义的可暂停函数 | `async def fetch(): ...` |
+| 协程对象 | 调用协程函数后得到、尚未真正跑完的 awaitable 对象 | `coro = fetch()` |
+| `await` | 等待 awaitable 完成，同时把执行权交回事件循环的语法 | `result = await fetch()` |
+| Task | 被事件循环安排执行的协程包装 | `task = asyncio.create_task(fetch())` |
+| Event Loop | 负责在 I/O 等待期间切换多个 Task 的调度器 | `asyncio.run(main())` 创建脚本入口循环 |
+| 阻塞 I/O | 调用期间占着当前线程，其他协程不能切换的操作 | `time.sleep(1)` |
+
+## 最小可运行链
+
+```python
+import asyncio
+
+async def fetch_name() -> str:
+    await asyncio.sleep(0.1)  # 模拟网络等待，不阻塞线程
+    return "Enkidu"
+
+async def main() -> None:
+    name = await fetch_name()
+    print(name)
+
+asyncio.run(main())
+```
+
+`asyncio` 是 Python 标准库，负责提供事件循环、Task、并发控制等异步工具；本章不需要安装它。上面四步就是脚本中的完整入口：定义协程函数 -> 在 `main()` 里 `await` -> 用 `asyncio.run()` 启动事件循环。
+
 ---
 
 ## 📖 餐厅类比（从头到尾串一遍）
@@ -426,6 +461,13 @@ test_sync()                # 同步: 3.0s ← 三倍！
 - [ ] FastAPI 路由为什么推荐总是 `async def`？
 - [ ] `gather` 中一个任务崩了怎么办？
 
+## 四条理解标准
+
+- [ ] **核心思想**：异步不是让一段 CPU 代码跑得更快，而是在等待网络、数据库或模型返回时，让事件循环先运行别的任务。
+- [ ] **解决的问题**：避免一个慢 I/O 请求把同一线程中的其他请求一起卡住，提高 I/O 密集型服务的并发处理能力。
+- [ ] **为什么不用普通 `def` 或 `time.sleep()`**：同步阻塞会占住线程；只有可等待的异步 I/O 才能在 `await` 处主动让出执行权。
+- [ ] **项目中怎么实现**：能在 `app/routers/ai.py` 或 `app/routers/rag.py` 找到 async 路由和异步流式生成器，并说明它们在等待模型输出时如何继续服务其他请求。
+
 ---
 
 ## 🔗 项目中的 async 代码位置
@@ -440,4 +482,3 @@ test_sync()                # 同步: 3.0s ← 三倍！
 ---
 
 > **下一章**：`jwt-auth` — 用户认证。async 是 JWT 异步验证的基石，学完这章你已经准备好了。
-

@@ -8,6 +8,55 @@ draft: false
 ---
 > 复习文档 · ADHD友好 · 从零开始
 
+## 本章学到哪里，不学到哪里
+
+本章只学习：向量、点积、范数、归一化和余弦相似度之间的关系，并用两个短向量验证公式。
+
+本章暂时不学习：Embedding 模型训练、向量数据库索引、ANN 算法、分块策略和完整 RAG。它们会使用本章的相似度思想，但不是本章的实现目标。
+
+## 一句话理解
+
+**Embedding 把文本变成固定长度的数字向量，余弦相似度比较两个向量的方向，从而作为语义检索的一个相似度信号。**
+
+## 它在 AI 应用中的位置
+
+```text
+文本
+  -> Embedding 模型
+  -> 向量
+  -> 余弦相似度
+  -> 排序相似文本
+  -> RAG 检索 / 推荐 / 去重 / 聚类
+```
+
+余弦相似度只负责“比较两个已经存在的向量”，不负责生成向量，也不负责从数据库取出文档。在 RAG 中，向量模型和向量数据库分别是它的前后环节。
+
+## 最小验证例子
+
+下面只使用 Python 标准库 `math`，不需要安装额外依赖：
+
+```python
+from math import sqrt
+
+
+def cosine_similarity(a: list[float], b: list[float]) -> float:
+    if len(a) != len(b):
+        raise ValueError("两个向量的维度必须一致")
+
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = sqrt(sum(x * x for x in a))
+    norm_b = sqrt(sum(y * y for y in b))
+    if norm_a == 0 or norm_b == 0:
+        raise ValueError("零向量没有可比较的方向")
+    return dot / (norm_a * norm_b)
+
+
+print(cosine_similarity([3, 2], [6, 4]))  # 接近 1：方向相同
+print(cosine_similarity([1, 0], [0, 1]))  # 0：方向垂直
+```
+
+验证重点不是背出小数，而是观察：同方向的向量即使长度不同，结果仍接近 `1`；维度不同或出现零向量时，函数应拒绝计算。
+
 ---
 
 ## 🔧 准确术语速查
@@ -677,4 +726,3 @@ cosine = (k × dot(A,A)) / (norm(A) × k × norm(A))
 | 把数学公式和代码割裂 | 会背公式但不会写函数 | 对照 `dot`、`norm`、`cosine_similarity` 三步实现 |
 
 > 下一章预告：用真实 Embedding 模型跑一遍，亲眼看"代码质量"和"天气真好"的相似度到底差多少！
-

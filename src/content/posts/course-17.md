@@ -80,6 +80,19 @@ JWT 是一张**服务器盖章的数字身份卡**。服务器不用记你是谁
 
 ### 💻 代码示例
 
+### 本节首次引入包：`bcrypt`
+
+| 项目 | 说明 |
+|------|------|
+| 来源与依赖 | `bcrypt` 是 Poetry 管理的第三方密码哈希包；本项目依赖范围是 `bcrypt >=5.0.0,<6.0.0`。 |
+| 解决什么 | 为密码提供专门设计的慢速、带盐的**单向哈希**，降低数据库泄露后的撞库和暴力破解风险。 |
+| 当前拿到什么 | `bcrypt.gensalt()` 生成盐，`hashpw()` 生成可存库的哈希，`checkpw()` 验证用户输入。 |
+| 常见业务用途 | 用户注册/登录密码保存；管理员重置密码后重新生成哈希。 |
+| 不负责什么 / 替代 | 它不签发 JWT、不加密可还原的数据，也不管理用户表；JWT 用本节后面的 `PyJWT`，需要换算法时选成熟的 `argon2-cffi`，不要用 `hashlib.sha256` 直接哈希密码。 |
+| 本章掌握边界 | 会调用这三个函数并理解盐与成本因子即可；不要求实现密码学算法或自行选择生产成本参数。 |
+
+最小形状就是：`bcrypt.hashpw(password.encode(), bcrypt.gensalt())`。注册时调用一次，登录时用 `bcrypt.checkpw(...)` 比对。
+
 ```python
 import bcrypt
 
@@ -185,6 +198,19 @@ JWT = `Header（票头）.Payload（票面信息）.Signature（防伪钢印）`
 **🚨 关键警醒**：票面信息（Payload）只是 Base64 编码——不是加密！任何人在 jwt.io 粘贴就能解码。**绝不要在 Payload 里放密码/手机号！**
 
 ### 💻 代码示例——你的项目里 [app/routers/auth.py:54-64](app/routers/auth.py)
+
+### 本节首次引入包：`PyJWT`（导入名为 `jwt`）
+
+| 项目 | 说明 |
+|------|------|
+| 来源与依赖 | `PyJWT` 是 Poetry 管理的第三方包，安装名为 `pyjwt`，代码中写 `import jwt`；本项目依赖范围是 `pyjwt >=2.13.0,<3.0.0`。 |
+| 解决什么 | 按 JWT 标准完成令牌编码、签名验证和常见异常识别，避免手写 Base64、HMAC 与过期校验。 |
+| 当前拿到什么 | `jwt.encode()` 签发字符串令牌，`jwt.decode()` 验签并解析 payload，`ExpiredSignatureError` / `InvalidTokenError` 让路由区分失败原因。 |
+| 常见业务用途 | 登录后签发访问令牌；多个后端服务验证同一身份令牌。 |
+| 不负责什么 / 替代 | 它不保存用户、不做黑名单、不替你选择安全密钥，也不让 Payload 保密；需要不同 JWT 生态时可选 `python-jose`，但当前项目保持 `PyJWT` 即可。 |
+| 本章掌握边界 | 会用 `encode` / `decode` 和捕获验证异常即可；不要求手写签名算法或实现 OAuth、OIDC。 |
+
+最小形状是：`jwt.encode(payload, secret, algorithm="HS256")` 与 `jwt.decode(token, secret, algorithms=["HS256"])`。
 
 ```python
 import jwt
@@ -356,7 +382,7 @@ def enter_vip(user: dict = Depends(get_current_user)):
 ```
 
 ### 🔍 逐步拆解
-1. 前端请求头：`Authorization: Bearer <your-jwt>`
+1. 前端请求头：`Authorization: Bearer eyJhbG...`
 2. `HTTPBearer()` 自动提取 `eyJhbG...` → `credentials.credentials`
 3. **先查黑名单** `token_hash`（不是先验签——挂失的票直接拦，连验签都不值得）
 4. `jwt.decode` 验钢印
@@ -875,7 +901,7 @@ def xxx(user = require_role("ADMIN")):
 
 ### 请求头格式
 ```http
-Authorization: Bearer <your-jwt>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 ```
 
 ### 环境变量配置
@@ -964,4 +990,3 @@ if not JWT_SECRET:
 | [.env](../.env) | JWT_SECRET 环境变量 |
 | Swagger UI | 启动后访问 http://127.0.0.1:8000/docs |
 | [pyproject.toml](../pyproject.toml) | bcrypt + pyjwt 依赖 |
-
