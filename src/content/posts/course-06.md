@@ -26,6 +26,11 @@ draft: false
 
 ---
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：用 `create_engine` 和 `sessionmaker` 配置数据库连接；用 `declarative_base` 定义 ORM 模型；用 `ForeignKey` 和 `relationship` 建立表关联；用 `Depends(get_db)` 注入数据库会话；用 `db.add`/`db.commit`/`db.query` 操作数据库。
+- **本章暂不要求**：Alembic 数据库迁移、异步 SQLAlchemy、复杂 JOIN 查询、连接池调优、数据库测试（pytest + TestClient）——这些属于生产级数据库工程。
+
 ## 一、架构概览
 
 ### 1.1 技术栈分层
@@ -988,3 +993,13 @@ db.commit()
 5. **数据库迁移**：学习 Alembic 管理数据库版本
 6. **测试练习**：使用 pytest 和 TestClient 编写单元测试
 
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | 用 ORM 把 Python 类映射到数据库表，用依赖注入让框架自动管理数据库会话的生命周期。 | 一、架构概览 · 六、IoC 与 DI 深度解析 |
+| 干什么 | 通过 SQLAlchemy 实现数据库 CRUD，不用手写 SQL；每个请求自动创建独立数据库会话，用完后自动关闭。 | 八、CRUD 操作详解 · 七、为什么 get_db() 使用 yield |
+| 为什么这么干 | ORM 避免手写 SQL 字符串拼接和类型转换；`yield` + `finally` 确保数据库连接无论是否异常都被释放；`Depends` 让路由函数不必关心连接的创建和销毁。 | 七、为什么 get_db() 使用 yield · 六、IoC 与 DI 深度解析 |
+| 怎么干 | 能写出 `create_engine`、`sessionmaker`、`Base` 模型类、`get_db()` 生成器函数和 `Depends(get_db)` 的完整模板。 | 二、数据库连接配置 · 总结速查表 |

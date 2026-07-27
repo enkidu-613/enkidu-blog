@@ -28,6 +28,11 @@ draft: false
 
 **Prompt 是概率性的愿望，Pydantic 是确定性的闸门。** 你把愿望写进 Prompt，闸门保证出来的东西一定符合格式。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：用 Pydantic Schema + `with_structured_output()` 让模型返回结构化 JSON、用 `Literal` 做枚举约束、用 Few-Shot 引导输出格式、用 `<user_text>` 标签降低注入风险、用 `try/except` → 502 兜底。
+- **本章暂不要求**：function calling 模式、流式结构化输出、自定义输出解析器、Prompt 版本管理。
+
 ## 🗺️ 本章代码地图
 
 > 边读边对照项目文件，ADHD 友好——看到真实代码比读文档安心 10 倍。

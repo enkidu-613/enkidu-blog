@@ -531,3 +531,14 @@ bar = "█" * int(sim * 20)
 - [ ] FastAPI + Chroma 最小原型
 - [ ] 手搓最小 RAG 闭环
 - [ ] LangChain 集成
+
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | ChromaDB 用向量距离帮你找"语义最接近"的文本 | 一、向量数据库是什么 |
+| 干什么 | 能把文档、向量、id、metadata 放进集合，再按查询向量找近邻 | 二、ChromaDB 核心概念 / 四、语义检索完整流程 |
+| 为什么这么干 | 普通关键字匹配只看字面，向量检索能处理同义、改写和跨语言；但真实语义质量仍取决于 Embedding 模型 | 三、简化向量 vs 真实 Embedding 向量 |
+| 怎么干 | 能写出 `get_or_create_collection()`、`collection.add()`、`collection.query()`，并解释 `ids/documents/metadatas/embeddings` 的职责 | 五、代码示例详解 |

@@ -30,6 +30,11 @@ draft: false
 
 Alembic = **数据库结构的 Git**。代码改模型，Alembic 生成“数据库结构变更提交”，你再把这个提交应用到真实数据库。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：运行 `alembic init` 生成骨架、修改 `env.py` 连接模型 metadata、用 `--autogenerate` 生成迁移草稿、执行 `upgrade` 和 `downgrade`、检查迁移文件后再执行。
+- **本章暂不要求**：SQLite 之外的数据库迁移适配、数据迁移（只改结构不改数据）、自动 CI/CD 迁移流水线。
+
 ## 准确术语速查
 
 | 术语 | 中文理解 | 项目里对应 |
@@ -628,3 +633,13 @@ Alembic
 | `alembic/env.py` | 连接模型 metadata 和数据库 URL |
 | `alembic/versions/*.py` | 每次迁移记录 |
 
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | Alembic 是数据库结构的 Git：每次模型变化生成一个"commit"，可执行可回滚。 | 第一关「为什么需要 Alembic」、第二关「心智模型」 |
+| 干什么 | 解决 `create_all()` 不能改已有表结构的问题，让数据库结构变更可追溯、可协作。 | 第一关「为什么需要 Alembic」 |
+| 为什么这么干 | `create_all()` 只建表不改表；手写 ALTER TABLE 易出错、难回滚；Alembic 用 autogenerate 比对模型和数据库自动生成迁移。 | 第一关「你的项目现在的情况」、第二关「三层关系」 |
+| 怎么干 | `alembic init` → 改 `env.py` 接 `Base.metadata` → `revision --autogenerate` → 检查 → `upgrade head` → `downgrade -1` 回滚。 | 终极速查表

@@ -28,6 +28,11 @@ draft: false
 
 CRUD 是后端最基础的资源管理闭环：用 POST 创建、GET 查询、PUT/PATCH 更新、DELETE 删除。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：用 Pydantic `BaseModel` 定义请求/响应数据模型；用 `@app.post`/`@app.get`/`@app.delete` 实现增查删路由；用 `HTTPException` 返回正确的状态码；识别请求体、路径参数、查询参数的区别。
+- **本章暂不要求**：真实数据库持久化、ORM 映射、依赖注入、用户认证、分页和搜索排序——这些在后续 ORM 章节。
+
 ## 🔧 准确术语速查
 
 | 术语 | 准确含义 | 对应代码 |
@@ -605,4 +610,3 @@ def delete_item(item_id: int):
 - [ ] 干什么：让客户端能通过 HTTP 管理数据。
 - [ ] 为什么这么干：REST 风格让接口含义稳定，前后端协作更清楚。
 - [ ] 怎么干：能写出 `POST`、`GET`、`PUT/PATCH`、`DELETE` 的最小路由模板。
-

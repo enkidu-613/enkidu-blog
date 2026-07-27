@@ -28,6 +28,11 @@ pytest = **自动帮你验证代码行为有没有被改坏的检查员**。
 
 你不是为了“写测试而写测试”，而是为了以后改 `app/routers/auth.py`、`app/routers/rag.py`、`app/routers/websocket.py` 时，不用每次手动点 Swagger 和 Hoppscotch。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：用 `poetry run pytest` 跑测试、写 Arrange/Act/Assert 三段式、用 TestClient 测 FastAPI 接口、用 fixture 和 dependency override 隔离测试数据库、用 monkeypatch mock 外部调用。
+- **本章暂不要求**：异步测试（AsyncClient）、pytest 插件开发、覆盖率配置与 CI 集成。
+
 ## 准确术语速查
 
 | 术语 | 中文理解 | 项目里对应 |
@@ -690,3 +695,14 @@ def test_something():
 5. 再测认证闭环。
 6. 测 WebSocket 的固定收发行为。
 7. 用 mock 测一个 SSE 响应后结束本章。
+
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | pytest 不是追求 100% 覆盖率，而是改代码时心里有底——自动验证重要行为没坏。 | 第一关「为什么需要测试」 |
+| 干什么 | 解决手动点 Swagger 不可重复、不可自动化的问题，让回归测试一键运行。 | 第一关「手动测试的问题」 |
+| 为什么这么干 | 手点 Swagger 随项目变大无法覆盖全部接口、无法在 CI 中自动检查；自动测试可以重复跑、精确报错。 | 第一关 |
+| 怎么干 | `poetry run pytest` → 写 Arrange/Act/Assert → `TestClient` 测接口 → fixture + dependency override 隔离数据库 → monkeypatch mock 外部 API。 | 终极速查表、第八关「AI/RAG/WebSocket 怎么测」

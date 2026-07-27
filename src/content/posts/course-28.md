@@ -1409,3 +1409,14 @@ LangChain Agent 版本会用 @tool 包装搜索函数，再传给 create_agent(.
 ```
 
 能做到这四条，就可以进入本章跟写和考试。
+
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | LangChain Agent 把模型、工具和执行循环组合起来，让模型可以请求工具，后端执行后再基于结果回答 | 一句话理解 |
+| 干什么 | 减少手写 Function Calling loop 的重复工作——不用每次手动解析 tool_call、调用函数、追加 tool output 和再次请求模型 | 第一关"create_agent 替你做了什么" |
+| 为什么这么干 | 完全控制每一步时手写 loop 更清楚；快速组合多个工具、记忆和模型时 LangChain Agent 更省事 | 第八关"和当前 registry.py 的关系" |
+| 怎么干 | 用 `@tool` 包装搜索函数，传给 `create_agent(model=llm, tools=[...])`，从 `result["messages"][-1].content` 取回答 | 第一关、第二关 |

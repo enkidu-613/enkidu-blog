@@ -24,6 +24,11 @@ Multi-Agent 不是“多开几个模型就更聪明”，而是把职责、工�
 
 `Supervisor` 是一种**角色名**，不是新的 Python 类：本章里它就是 `create_agent(...)` 创建出的主 Agent。`Subagent` 同样是一个 Agent 对象，只是被主 Agent 当作工具的内部实现来调用。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：运行 Supervisor + Subagent 最小例子、区分 Subagent / Router / Handoff 三种模式、说出什么时候不该拆多 Agent、理解 Subagent 被包装成主 Agent 的一个 Tool 的代码形态。
+- **本章暂不要求**：生产级并发多 Agent、复杂层级图、跨 Agent 长期记忆、自动任务拆分、完整 Handoff 子图实现。
+
 ## 先看真实对象长什么样
 
 最小 Subagent 模式里，真正出现的对象是：
@@ -409,3 +414,14 @@ builder.add_node("support_agent", call_support_agent)
 5. 为什么本章连续调用两次 `supervisor.invoke(...)` 仍不会天然保留上一轮内容？
 
 > 教学方式：具体锚点优先。先运行一个 `create_agent -> @tool 包装 -> create_agent` 的真实调用，再讨论复杂架构。
+
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | Multi-Agent 是把职责、工具和上下文拆给不同执行单元，再规定谁负责调度、谁负责最终对用户说话 | 一句话理解 |
+| 干什么 | 解决单一 Agent 职责过重、工具列表过长、或需要隔离不同领域上下文和权限的问题 | 第三关"什么时候不该拆" |
+| 为什么这么干 | 只有一个领域、工具数量很少、没有独立上下文需求时，单 Agent 更省事；明确出现职责冲突时才拆 | 第三关"什么时候不该拆" |
+| 怎么干 | 抄 Supervisor + Subagent 模式：Subagent 被 `@tool` 包装成主 Agent 的一个 Tool，`research_agent.invoke()` 在工具函数内部调用 | 第一关"先跑一个真实的 Subagent 调用" |

@@ -78,6 +78,11 @@ LLM + Tools + Loop + Safety
 
 这里的 `Safety` 不是装饰项。只要 Agent 能调用工具，就必须有后端安全边界，例如权限校验、用户确认、审计日志和循环上限。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：区分普通聊天 / RAG / Agent 的边界、解释 Tool / Tool Call / Tool Output / Agent Loop、理解 Function Calling 是模型生成调用意图而非真正执行、看懂最小 Agent Loop 伪代码、知道为什么高风险工具必须后端鉴权。
+- **本章暂不要求**：LangChain Agent 框架（下一章手写 loop 后再学）、复杂 ReAct 策略、生产级安全系统、工具注册表实现、Agent 记忆持久化。
+
 ---
 
 ## 本章代码地图
@@ -830,3 +835,13 @@ def search_knowledge_base(query: str, limit: int = 3) -> list[dict]:
 4. 画出最小 Agent Loop。
 5. 说明为什么高风险工具必须后端鉴权和确认。
 
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | Agent = LLM + Tools + Loop + Safety，模型在工具调用结果之间继续决策 | 一句话理解 |
+| 干什么 | 解决普通 LLM 不能访问外部系统、不能获取实时数据、不能执行应用动作的问题 | 第一关"普通聊天、RAG、Agent 的区别" |
+| 为什么这么干 | 普通聊天只能直接回答；纯 RAG 固定检索后回答；Agent 能根据任务判断是否用工具、用哪个、是否继续 | 第八关"Agent 和 RAG 的关系" |
+| 怎么干 | 从只读工具开始，在项目中设计 `search_knowledge_base` 并手写最小 Agent Loop | 第六关"最小 Agent Loop"、第七关"设计第一个 Tool" |

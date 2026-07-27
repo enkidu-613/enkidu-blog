@@ -23,6 +23,11 @@ draft: false
 
 Hugging Face 不是一个模型，而是一套围绕模型仓库、模型加载库和推理服务组成的生态；你项目的本地 Embedding 已经在其中。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：区分 Hub 模型 ID、`SentenceTransformer` 模型对象和向量三者的关系、用项目已有的 `get_embedding()` 做本地推理实验、用 `pipeline()` 快速验证分类任务、读模型卡确认任务／语言／许可证／硬件要求。
+- **本章暂不要求**：模型微调与 LoRA、训练集处理、生产推理集群、量化与部署优化。
+
 ## 先看真实对象长什么样
 
 | 名称 | 它是什么 | 最小代码形态 |
@@ -203,3 +208,13 @@ print(response.choices[0].message.content)
 
 > 教学方式：具体锚点优先。先运行项目已有的 `get_embedding()`，再理解模型仓库、缓存、设备和远程推理的分工。
 
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | Hugging Face 不是单个模型，而是一套围绕模型仓库、模型加载库和推理服务组成的生态 | 一句话理解 |
+| 干什么 | 解决"模型从哪里来、怎么加载、怎么推理、怎么选"的问题——Hub 提供仓库，`SentenceTransformer` / `pipeline()` 提供加载和推理 | 第一关"你的项目已经怎样使用 Hugging Face" |
+| 为什么这么干 | 项目内置的 Embedding 模型 `BAAI/bge-base-zh-v1.5` 已在本地缓存，`get_embedding_model()` 用模块级缓存避免重复加载 | 第一关 |
+| 怎么干 | 抄 `get_embedding()` 做本地 Embedding 推理，或抄 `pipeline("sentiment-analysis")` 快速验证分类任务 | 第二关、第三关 |

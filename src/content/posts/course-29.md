@@ -807,3 +807,14 @@ LangGraph 用共享 state、执行 node、连接 edge 来显式定义工作流�
 2. 写出 `START -> node A -> node B -> END` 的最小图。
 3. 说出 `compile()` 和 `invoke()` 的区别。
 4. 说出为什么 `messages` 只是 state 的一个字段，以及为什么 checkpointer 不是运行图的必需品。
+
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | 用共享 State、执行 Node、连接 Edge 来显式定义工作流，而不是把执行顺序藏在框架内部 | 一句话理解 |
+| 干什么 | 当 Agent 不再是一条固定直线，而需要明确分支、循环、状态恢复或人工介入时，你可以看见并控制每一步 | 第四关"compile() 和 invoke() 为什么分开" |
+| 为什么这么干 | 简单标准 Agent 用 `create_agent` 更省事；完全自定义用手写 loop；流程变成多个明确步骤和状态转移时 LangGraph 更容易组织、观察和扩展 | 第五关"和 create_agent 的关系" |
+| 怎么干 | 抄 `StateGraph(State) -> add_node -> add_edge -> compile() -> invoke()` 最小骨架 | 第一关"最小状态图先跑起来" |

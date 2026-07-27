@@ -6,7 +6,7 @@ tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
 ---
-# 26. Function Calling 执行 Loop：模型吐出 tool call 后，后端到底做什么
+		# 26. Function Calling 执行 Loop：模型吐出 tool call 后，后端到底做什么
 
 > 本章目标不是马上写复杂 Agent。  
 > 本章目标是：你能看懂一次 Function Calling 的完整后端执行链路，知道 `tool_call` 怎么变成真实函数调用，再怎么把 `tool output` 交回模型。
@@ -63,6 +63,11 @@ TOOL_FUNCTIONS 是后端找真实函数的映射表
   -> 后端把 tool output 放回 messages
   -> 模型生成最终回答
 ```
+
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：用 `TOOLS` + `TOOL_FUNCTIONS` 注册工具、解析模型吐出的 `tool_call` 和 `arguments`、用 `TOOL_FUNCTIONS[tool_name]` 找到真实函数、把 tool output 以 `role="tool"` 放回 `messages`、写最小 Loop 并设 `MAX_STEPS`。
+- **本章暂不要求**：LangChain Agent 封装（下一章对比用）、生产级参数校验框架、多工具并发、流式 tool call、中间件或钩子系统。
 
 ---
 
@@ -769,3 +774,13 @@ estimate_tokens(text: str) -> dict
 4. 画出 `tool call -> tool output -> final answer` 的流程。
 5. 说明为什么工具执行前必须做校验和循环上限。
 
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | 模型生成 tool call，后端执行工具，再把 tool output 交回模型生成最终回答 | 一句话理解 |
+| 干什么 | 解决模型不能直接访问外部系统的问题——模型不会执行 Python，tool call 是两者之间的结构化约定 | 第一关"模型第一次返回的是什么" |
+| 为什么这么干 | 普通聊天只能回答文本；Function Calling 让模型可以请求应用侧能力：搜索知识库、查数据库、调用 API | 第九关"为什么不能完全信任模型给的 arguments" |
+| 怎么干 | 抄 `TOOL_FUNCTIONS` 映射表 + `run_tool_call()` 最小执行器 + `role="tool"` 回写 messages | 第五关"最小工具执行函数"、第八关"完整最小 Loop" |

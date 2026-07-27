@@ -1182,4 +1182,11 @@ chat history：告诉模型“前几轮用户和助手说过什么”
 
 ---
 
+## ✅ 四条理解标准
 
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | 按 session 保存历史消息，在下一次调用模型时把历史注入 messages | 一句话理解 |
+| 干什么 | 解决模型本身无状态的问题——模型只看得到本次请求里的 messages，应用不带上历史，模型就不知道前文 | 第二关"四个词不要混" |
+| 为什么这么干 | 全局 `chat_history` 会导致多用户串线、重启丢失、历史无限增长、不方便接 LangChain chain | 第五关"为什么需要 session_id" |
+| 怎么干 | 抄 `session_id -> InMemoryChatMessageHistory` + `RunnableWithMessageHistory` 自动读/写历史 | 第七关"RunnableWithMessageHistory 做了什么" |

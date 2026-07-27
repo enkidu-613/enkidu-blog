@@ -26,6 +26,11 @@ draft: false
 
 WebSocket = **打电话，不是寄信**。一次握手，持久连接，双方随时说话。
 
+### 本章学到哪里，不学到哪里
+
+- **本章要会**：写出 WebSocket 三行最小模板（accept/receive/send）、用 ConnectionManager 做简易广播、在 SSE 和 WebSocket 之间做技术选型、用 `create_task` + `cancel` 实现用户打断 AI。
+- **本章暂不要求**：生产级多进程广播（Redis Pub/Sub）、自定义协议帧、WebSocket 压力测试。
+
 ## 🗺️ 本章代码地图
 
 > 边读边对照项目文件，ADHD 友好——看到真实代码比读文档安心 10 倍。
@@ -588,3 +593,14 @@ WebSocket
 | `app/routers/ai.py` | SSE 流式 AI 对话（现有，对比参考） |
 | `main.py` | 注册路由 `app.include_router(ws_router)` |
 | `md/16_异步编程深入.md` | async/await、asyncio.create_task 前置知识 |
+
+---
+
+## ✅ 四条理解标准
+
+| 标准 | 问题 | 答案在 |
+|------|------|--------|
+| 思想是什么 | WebSocket 是打电话（全双工长连接），不是寄信（HTTP 请求-响应）。 | 第一关「HTTP vs WebSocket」 |
+| 干什么 | 解决需要服务器主动推消息、客户端随时发命令的双向通信场景，如 AI 打断、聊天室。 | 第五关「SSE vs WebSocket」 |
+| 为什么这么干 | HTTP/SSE 只支持服务器→客户端单向；WebSocket 一次握手后两边随时说话，帧头只有 2-6 字节。 | 第一关「技术对比」、第六关「AI 打断实战」 |
+| 怎么干 | 抄最小模板：`accept() → receive_text() → send_text()`；广播用 ConnectionManager；AI 打断用 `create_task` + `cancel`。 | 第三关「最小模板」、第四关「连接管理器」
