@@ -398,6 +398,59 @@ second_result = handoff_agent.invoke(
 
 `select_prompt()` 的直接调用者是 `apply_role_config()`；`apply_role_config()` 的直接调用者是 LangChain 的 Agent 循环，因为它被放进了 `middleware=[apply_role_config]`。
 
+### 补充：State 已更新但 Prompt 没切换时怎么排错
+
+这两个对象先用一句话区分：
+
+```text
+State = Agent 当前共享的事实，例如 active_agent="support_agent"
+ModelRequest = middleware 根据 State 整理出的本轮模型请求
+```
+
+模型通常不会直接读取原始 State 字典。Agent / middleware 会把 State 中需要给模型看的内容整理到请求里：
+
+```text
+State
+  -> request.state
+  -> select_prompt(state)                 # 选择 Prompt
+  -> 根据 active_agent 选择 tools 子集
+  -> request.override(...)                # 生成本轮的新 ModelRequest
+  -> handler(updated_request)             # 继续真实模型调用
+  -> 模型读取 messages、system Prompt、tools
+```
+
+因此，如果日志已经证明：
+
+```python
+state["active_agent"] == "support_agent"
+```
+
+但模型仍然使用分诊 Prompt 和分诊 tools，排查顺序应该是：
+
+1. **检查 middleware 是否注册**：`create_agent(..., middleware=[apply_role_config])` 是否真的包含它。没有注册，`apply_role_config` 根本不会自动运行。
+2. **检查 `select_prompt` 的输入**：它是否读取 `request.state`，而不是读取一个旧的局部变量或固定返回分诊 Prompt。
+3. **检查 tools 分支**：`active_agent == "support_agent"` 时，是否真的返回支持角色的工具子集。
+4. **检查 `override` 的结果**：是否把 `system_message` 和 `tools` 写入 `updated_request`，而不是只调用方法却继续使用旧的 `request`。
+5. **检查 handler 的参数**：是否执行了 `handler(updated_request)`，而不是 `handler(request)`。
+
+可以临时在 middleware 中打印请求改造前后的关键值：
+
+```python
+print("before:", request.state)
+print("selected prompt:", prompt)
+print("selected tools:", [tool.name for tool in available_tools])
+
+updated_request = request.override(
+    system_message=SystemMessage(content=prompt),
+    tools=available_tools,
+)
+
+print("after override:", updated_request.system_message)
+return handler(updated_request)
+```
+
+这里不要先查 `checkpointer` 和 `thread_id`：它们主要解决**下一次 `invoke()` 是否恢复旧 State**。同一次 Agent loop 中 State 已经变了但 Prompt 没变，优先查的是 middleware 到 handler 的请求改造链。
+
 第二次 `invoke()` 复用同一个 `thread_config` 中的 `thread_id`，`InMemorySaver` 才能取回 `active_agent="support_agent"`。换一个 `thread_id` 或重启 Python 进程，都会重新回到分诊角色。
 
 ### `Tool` 和 `ToolRuntime` 的关系
