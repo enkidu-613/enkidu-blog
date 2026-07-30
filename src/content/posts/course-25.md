@@ -1,7 +1,6 @@
 ---
 title: "25. AI Agents 基础：模型什么时候该自己答，什么时候该用工具"
-published: 2026-01-25
-updated: 2026-07-28
+published: 2026-07-28
 description: "本章参考官方文档和经典论文，并结合你当前项目改写成学习版："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

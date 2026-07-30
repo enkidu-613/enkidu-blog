@@ -1,7 +1,6 @@
 ---
 title: "22. AI 安全与伦理：别把安全边界交给模型"
-published: 2026-01-22
-updated: 2026-07-28
+published: 2026-07-28
 description: "LLM 是会被输入影响的文本推理器，不是权限系统。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

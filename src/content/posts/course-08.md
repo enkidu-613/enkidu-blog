@@ -1,7 +1,6 @@
 ---
 title: "08_提示词工程与聊天记忆"
-published: 2026-01-08
-updated: 2026-07-28
+published: 2026-07-28
 description: "想象你和一个人聊天，但对方每句话都失忆："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

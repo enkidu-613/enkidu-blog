@@ -1,7 +1,6 @@
 ---
 title: "20. Git 本地仓库、提交与回退"
-published: 2025-10-20
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：初始化、状态、差异、暂存、提交和放弃未暂存改动。 不学：远程仓库。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

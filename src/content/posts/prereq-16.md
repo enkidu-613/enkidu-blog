@@ -1,7 +1,6 @@
 ---
 title: "16. Python 表达式、变量绑定与真值判断"
-published: 2025-10-16
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：表达式、赋值、返回值、None、真值和显式转换。 不学：指针、C++ 左右值。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

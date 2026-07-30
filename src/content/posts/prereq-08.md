@@ -1,7 +1,6 @@
 ---
 title: "08. Python 变量、类型与运算"
-published: 2025-10-08
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：str、int、float、bool 与基础运算。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

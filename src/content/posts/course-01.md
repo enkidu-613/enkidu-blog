@@ -1,7 +1,6 @@
 ---
 title: "Python 基础学习笔记"
-published: 2026-01-01
-updated: 2026-07-28
+published: 2026-07-28
 description: "1. 变量与基础类型"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

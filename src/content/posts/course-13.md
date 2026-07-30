@@ -1,7 +1,6 @@
 ---
 title: "13. RAG 闭环：从检索到回答"
-published: 2026-01-13
-updated: 2026-07-31
+published: 2026-07-31
 description: "上一章：FastAPI + Chroma 最小原型（双存储 API 化）"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

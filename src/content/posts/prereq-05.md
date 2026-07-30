@@ -1,7 +1,6 @@
 ---
 title: "05. 打开终端与定位目录"
-published: 2025-10-05
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：打开终端、查看位置、进入项目、列出文件。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

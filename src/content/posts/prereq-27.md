@@ -1,7 +1,6 @@
 ---
 title: "27. AI 应用开发地图与进入项目主线"
-published: 2025-10-27
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：API、Prompt、RAG、Agent、微调的边界。 不学：训练模型。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

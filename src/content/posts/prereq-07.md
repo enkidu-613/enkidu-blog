@@ -1,7 +1,6 @@
 ---
 title: "07. 编程思维：输入、处理、输出"
-published: 2025-10-07
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：IPO（输入、处理、输出）拆需求。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

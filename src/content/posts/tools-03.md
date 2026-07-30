@@ -1,7 +1,6 @@
 ---
 title: "工具教学 03：用 GitHub Actions 构建 Astro 博客并部署到 Cloudflare Pages"
-published: 2026-01-01
-updated: 2026-07-28
+published: 2026-07-28
 description: "本章环境：**macOS + pnpm + Astro/Fuwari 博客 + GitHub + Cloudflare Pages**。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

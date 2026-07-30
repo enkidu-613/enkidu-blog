@@ -1,7 +1,6 @@
 ---
 title: "13. Python 模块、虚拟环境与依赖"
-published: 2025-10-13
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：import、.venv、安装包。 不学：线上部署。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

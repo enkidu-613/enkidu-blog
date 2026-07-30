@@ -40,35 +40,29 @@ def source_mtime_date(src_path):
     )
 
 
-def update_frontmatter_date(frontmatter, updated_date):
-    """Insert or replace the single updated field without changing other fields."""
-    lines = frontmatter.splitlines()
-    updated_line = f"updated: {updated_date}"
-    updated_pattern = re.compile(r"^updated:\s*.*$")
-    published_pattern = re.compile(r"^published:\s*.*$")
-    replacement_index = None
-    retained_lines = []
+def update_frontmatter_date(frontmatter, published_date):
+	"""Set published to the source date and remove obsolete updated metadata."""
+	lines = frontmatter.splitlines()
+	published_line = f"published: {published_date}"
+	published_pattern = re.compile(r"^published:\s*.*$")
+	updated_pattern = re.compile(r"^updated:\s*.*$")
+	replaced = False
+	retained_lines = []
 
-    for line in lines:
-        if updated_pattern.match(line):
-            if replacement_index is None:
-                replacement_index = len(retained_lines)
-                retained_lines.append(updated_line)
-            continue
-        retained_lines.append(line)
+	for line in lines:
+		if updated_pattern.match(line):
+			continue
+		if published_pattern.match(line):
+			if not replaced:
+				retained_lines.append(published_line)
+				replaced = True
+			continue
+		retained_lines.append(line)
 
-    if replacement_index is None:
-        insertion_index = next(
-            (
-                index + 1
-                for index, line in enumerate(retained_lines)
-                if published_pattern.match(line)
-            ),
-            len(retained_lines),
-        )
-        retained_lines.insert(insertion_index, updated_line)
+	if not replaced:
+		retained_lines.append(published_line)
 
-    return "\n".join(retained_lines) + "\n"
+	return "\n".join(retained_lines) + "\n"
 
 
 def extract_source_body(content):

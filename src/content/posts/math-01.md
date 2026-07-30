@@ -1,7 +1,6 @@
 ---
 title: "01 向量与余弦相似度：AI 如何判断\"意思相近\""
-published: 2025-11-30
-updated: 2026-07-28
+published: 2026-07-28
 description: "向量 = 一根箭 = 一个列表"
 tags: ["AI 数学", "学习笔记"]
 category: "AI 数学"

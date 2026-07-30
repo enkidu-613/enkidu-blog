@@ -1,7 +1,6 @@
 ---
 title: "09. Python 条件、循环与输入"
-published: 2025-10-09
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：input、if/else、for。不学：函数。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

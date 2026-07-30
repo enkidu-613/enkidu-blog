@@ -1,7 +1,6 @@
 ---
 title: "02. 安装编辑器并创建第一个项目"
-published: 2025-10-02
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：安装一个编辑器、打开文件夹而不是单个文件。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

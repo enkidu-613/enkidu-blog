@@ -1,7 +1,6 @@
 ---
 title: "❌ 只靠 Prompt —— \"概率性愿望\""
-published: 2026-01-21
-updated: 2026-07-31
+published: 2026-07-31
 description: "Prompt 是概率性的愿望，Pydantic 是确定性的闸门。 你把愿望写进 Prompt，闸门保证出来的东西一定符合格式。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

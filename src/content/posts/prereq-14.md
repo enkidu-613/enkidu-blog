@@ -1,7 +1,6 @@
 ---
 title: "14. 调试 Traceback 与小项目整理"
-published: 2025-10-14
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：Traceback、最小修复、项目目录。 不学：复杂断点工具。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

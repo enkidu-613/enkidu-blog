@@ -1,7 +1,6 @@
 ---
 title: "14_上下文窗口管理"
-published: 2026-01-14
-updated: 2026-07-28
+published: 2026-07-28
 description: "上下文窗口是 LLM 的短期记忆容量——装太多会忘，装太杂会乱，管理不好直接报错或答非所问。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

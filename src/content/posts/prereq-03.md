@@ -1,7 +1,6 @@
 ---
 title: "03. 安装 Python 并验证环境"
-published: 2025-10-03
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：安装 Python、用版本命令确认终端找得到它。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

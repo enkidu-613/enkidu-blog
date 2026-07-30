@@ -1,7 +1,6 @@
 ---
 title: "06. 运行第一个 Python 程序与读报错"
-published: 2025-10-06
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：运行 hello.py、读 NameError。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

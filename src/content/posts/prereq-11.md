@@ -1,7 +1,6 @@
 ---
 title: "11. Python 列表、字典与集合"
-published: 2025-10-11
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：三种容器的选择。 不学：性能公式。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

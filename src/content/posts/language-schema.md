@@ -1,7 +1,6 @@
 ---
 title: "Schema：声明式数据契约"
-published: 2026-03-31
-updated: 2026-06-26
+published: 2026-06-26
 description: "Schema 是一份“数据应该长什么样”的说明书。"
 tags: ["编程基础", "学习笔记"]
 category: "编程基础"

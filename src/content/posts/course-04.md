@@ -1,7 +1,6 @@
 ---
 title: "FastAPI 基础学习笔记"
-published: 2026-01-04
-updated: 2026-07-28
+published: 2026-07-28
 description: "1. JSON 数据处理"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

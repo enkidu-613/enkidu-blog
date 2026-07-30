@@ -1,7 +1,6 @@
 ---
 title: "18. WebSocket 实时通信"
-published: 2026-01-18
-updated: 2026-07-31
+published: 2026-07-31
 description: "WebSocket = 打电话，不是寄信。一次握手，持久连接，双方随时说话。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

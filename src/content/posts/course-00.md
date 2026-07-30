@@ -1,7 +1,6 @@
 ---
 title: "环境配置与 PyCharm 使用指南"
-published: 2025-12-31
-updated: 2026-07-28
+published: 2026-07-28
 description: "1. PyCharm 简介"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

@@ -1,7 +1,6 @@
 ---
 title: "18. Python 类、对象与实例"
-published: 2025-10-18
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：类、实例、属性、方法、init。 不学：继承体系和手动内存管理。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

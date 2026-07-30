@@ -1,7 +1,6 @@
 ---
 title: "32. Hugging Face 生态：模型仓库、本地推理与项目里的 Embedding"
-published: 2026-02-01
-updated: 2026-07-28
+published: 2026-07-28
 description: "Hugging Face 不是一个模型，而是一套围绕模型仓库、模型加载库和推理服务组成的生态；你项目的本地 Embedding 已经在其中。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

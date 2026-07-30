@@ -1,7 +1,6 @@
 ---
 title: "Python 进阶学习笔记"
-published: 2026-01-02
-updated: 2026-07-28
+published: 2026-07-28
 description: "1. 运算符详解"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

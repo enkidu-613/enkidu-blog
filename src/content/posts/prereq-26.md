@@ -1,7 +1,6 @@
 ---
 title: "26. 数据结构选择与性能直觉"
-published: 2025-10-26
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：应用中的选择直觉。 不学：算法面试题。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

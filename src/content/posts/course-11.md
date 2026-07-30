@@ -1,7 +1,6 @@
 ---
 title: "11 双存储架构：SQLite + ChromaDB 协作"
-published: 2026-01-11
-updated: 2026-07-28
+published: 2026-07-28
 description: "对应代码: dualstoragedemo.py、models.py"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

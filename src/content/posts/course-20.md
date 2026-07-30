@@ -1,7 +1,6 @@
 ---
 title: "20. pytest 单元测试"
-published: 2026-01-20
-updated: 2026-07-31
+published: 2026-07-31
 description: "pytest = 自动帮你验证代码行为有没有被改坏的检查员。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

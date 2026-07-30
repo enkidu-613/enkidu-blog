@@ -1,7 +1,6 @@
 ---
 title: "FastAPI + SQLAlchemy ORM 学习笔记"
-published: 2026-01-06
-updated: 2026-07-28
+published: 2026-07-28
 description: "1. 架构概览"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

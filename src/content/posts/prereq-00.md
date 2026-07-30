@@ -1,7 +1,6 @@
 ---
 title: "00. 课程使用方法与学习地图"
-published: 2025-09-30
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：本课程的完成方式，以及 AI 应用开发的目标。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

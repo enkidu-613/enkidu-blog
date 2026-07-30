@@ -1,7 +1,6 @@
 ---
 title: "24. 互联网、HTTP、URL 与 JSON"
-published: 2025-10-24
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：客户端、服务器、URL、GET/POST、状态码、JSON。 不学：前端框架。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

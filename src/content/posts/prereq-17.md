@@ -1,7 +1,6 @@
 ---
 title: "17. Python 函数进阶：Lambda 与闭包"
-published: 2025-10-17
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：函数对象、简单 lambda、闭包。 不学：复杂装饰器。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

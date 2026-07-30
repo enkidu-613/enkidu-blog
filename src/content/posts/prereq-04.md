@@ -1,7 +1,6 @@
 ---
 title: "04. 路径、文件夹与文件扩展名"
-published: 2025-10-04
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：绝对路径、相对路径、扩展名。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

@@ -1,7 +1,6 @@
 ---
 title: "01. 认识电脑文件与开发工具"
-published: 2025-10-01
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：文件、文件夹、扩展名、编辑器和解释器。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

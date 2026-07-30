@@ -1,7 +1,6 @@
 ---
 title: "10. Python 函数、参数与返回值"
-published: 2025-10-10
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：def、参数、return。不学：文件读写。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

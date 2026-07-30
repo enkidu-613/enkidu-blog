@@ -1,7 +1,6 @@
 ---
 title: "15. Python 程序如何运行：源码、解释器与报错"
-published: 2025-10-15
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：源码、语法、解释器、进程、两类报错。 不学：解释器源码或性能优化。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

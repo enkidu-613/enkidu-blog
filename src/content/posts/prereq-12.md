@@ -1,7 +1,6 @@
 ---
 title: "12. Python 文件读写与异常处理"
-published: 2025-10-12
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：open、with、try/except。不学：数据库。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"

@@ -1,7 +1,6 @@
 ---
 title: "31. Multi-Agent 与复杂工作流：什么时候真的需要多个 Agent"
-published: 2026-01-31
-updated: 2026-07-31
+published: 2026-07-31
 description: "Multi-Agent 不是“多开几个模型就更聪明”，而是把职责、工具和上下文拆给不同执行单元，再规定谁负责调度、谁负责最后对用户说话。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

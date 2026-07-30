@@ -1,7 +1,6 @@
 ---
 title: "17. JWT 用户认证"
-published: 2026-01-17
-updated: 2026-07-31
+published: 2026-07-31
 description: "JWT 是一张服务器盖章的数字身份卡。服务器不用记你是谁，只看这张卡的印章对不对、过期了没。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

@@ -1,7 +1,6 @@
 ---
 title: "19. Git 安装与首次身份配置"
-published: 2025-10-19
-updated: 2026-07-19
+published: 2026-07-19
 description: "学：安装、版本验证、user.name、user.email。不学：GitHub；第 17 章再注册。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
