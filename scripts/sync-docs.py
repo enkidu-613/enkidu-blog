@@ -4,6 +4,8 @@
 import os
 import re
 import glob
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 SRC_DIR = "/Users/enkidu/PyCharmMiscProject/md"
 DST_DIR = "/Users/enkidu/personal-blog/src/content/posts"
@@ -28,6 +30,45 @@ def extract_frontmatter(content):
         if len(parts) >= 3:
             return parts[1], parts[2]
     return None, content
+
+
+def source_mtime_date(src_path):
+    """Return a source file's modification date in Asia/Shanghai."""
+    timestamp = os.path.getmtime(src_path)
+    return datetime.fromtimestamp(timestamp, tz=ZoneInfo("Asia/Shanghai")).strftime(
+        "%Y-%m-%d"
+    )
+
+
+def update_frontmatter_date(frontmatter, updated_date):
+    """Insert or replace the single updated field without changing other fields."""
+    lines = frontmatter.splitlines()
+    updated_line = f"updated: {updated_date}"
+    updated_pattern = re.compile(r"^updated:\s*.*$")
+    published_pattern = re.compile(r"^published:\s*.*$")
+    replacement_index = None
+    retained_lines = []
+
+    for line in lines:
+        if updated_pattern.match(line):
+            if replacement_index is None:
+                replacement_index = len(retained_lines)
+                retained_lines.append(updated_line)
+            continue
+        retained_lines.append(line)
+
+    if replacement_index is None:
+        insertion_index = next(
+            (
+                index + 1
+                for index, line in enumerate(retained_lines)
+                if published_pattern.match(line)
+            ),
+            len(retained_lines),
+        )
+        retained_lines.insert(insertion_index, updated_line)
+
+    return "\n".join(retained_lines) + "\n"
 
 
 def extract_source_body(content):
@@ -66,7 +107,7 @@ def find_source_file_numeric(src_dir, num):
 
 
 def sync_file(src_path, dst_path, create_fm=None):
-    """Sync source content to destination, preserving frontmatter."""
+    """Sync source content and source-derived updated date to destination."""
     with open(src_path, "r", encoding="utf-8") as f:
         src_content = f.read()
 
@@ -86,7 +127,11 @@ def sync_file(src_path, dst_path, create_fm=None):
             print(f"  WARNING: No frontmatter template for new file {dst_path}")
             return False
 
+    fm = update_frontmatter_date(fm, source_mtime_date(src_path))
     new_content = f"---{fm}---\n{src_body}"
+
+    if os.path.exists(dst_path) and dst_content == new_content:
+        return False
 
     with open(dst_path, "w", encoding="utf-8") as f:
         f.write(new_content)
@@ -131,6 +176,12 @@ def get_description_from_source(src_path):
     return ""
 
 
+def add_existing_destination(updates, category, num, src, dst):
+    """Queue an existing mapped destination for idempotent synchronization."""
+    if src and os.path.exists(dst):
+        updates.append((category, num, src, dst, None))
+
+
 def main():
     updates = []
 
@@ -138,21 +189,13 @@ def main():
     for num in range(0, 33):
         src = find_source_file(SRC_DIR, num)
         dst = os.path.join(DST_DIR, f"course-{num:02d}.md")
-        if src and os.path.exists(dst):
-            src_mtime = os.path.getmtime(src)
-            dst_mtime = os.path.getmtime(dst)
-            if src_mtime > dst_mtime:
-                updates.append(("main", num, src, dst, None))
+        add_existing_destination(updates, "main", num, src, dst)
 
     # 2. Math
     for num in [1]:
         src = find_source_file_numeric(os.path.join(SRC_DIR, "ai学习应用数学"), num)
         dst = os.path.join(DST_DIR, f"math-{num:02d}.md")
-        if src and os.path.exists(dst):
-            src_mtime = os.path.getmtime(src)
-            dst_mtime = os.path.getmtime(dst)
-            if src_mtime > dst_mtime:
-                updates.append(("math", num, src, dst, None))
+        add_existing_destination(updates, "math", num, src, dst)
 
     # 3. Tools
     for num in [1, 2, 3]:
@@ -160,10 +203,7 @@ def main():
         dst = os.path.join(DST_DIR, f"tools-{num:02d}.md")
         if src:
             if os.path.exists(dst):
-                src_mtime = os.path.getmtime(src)
-                dst_mtime = os.path.getmtime(dst)
-                if src_mtime > dst_mtime:
-                    updates.append(("tools", num, src, dst, None))
+                add_existing_destination(updates, "tools", num, src, dst)
             else:
                 # New file, need to create frontmatter
                 title = get_title_from_source(src)
@@ -174,13 +214,14 @@ def main():
     # 4. Language Schema (special: no number prefix)
     src = os.path.join(SRC_DIR, "编程语言基础", "Schema_声明式数据契约.md")
     dst = os.path.join(DST_DIR, "language-schema.md")
-    if os.path.exists(src) and os.path.exists(dst):
-        src_mtime = os.path.getmtime(src)
-        dst_mtime = os.path.getmtime(dst)
-        if src_mtime > dst_mtime:
-            updates.append(("lang", 0, src, dst, None))
+    add_existing_destination(updates, "lang", 0, src, dst)
 
-    # 5. Prereq - skip (blog versions are newer)
+    # 5. Prerequisites
+    prereq_dir = os.path.join(SRC_DIR, "新手需要学习的前置知识")
+    for num in range(0, 28):
+        src = find_source_file(prereq_dir, num)
+        dst = os.path.join(DST_DIR, f"prereq-{num:02d}.md")
+        add_existing_destination(updates, "prereq", num, src, dst)
 
     print(f"Files to update: {len(updates)}")
     print("-" * 60)
