@@ -1,6 +1,7 @@
 ---
 title: "19. Alembic 数据库迁移"
 published: 2026-01-19
+updated: 2026-07-28
 description: "Alembic = 数据库结构的 Git。代码改模型，Alembic 生成“数据库结构变更提交”，你再把这个提交应用到真实数据库。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

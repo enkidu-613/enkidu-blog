@@ -1,6 +1,7 @@
 ---
 title: "29. LangGraph 状态工作流：把 Agent 的执行过程显式画出来"
 published: 2026-01-29
+updated: 2026-07-28
 description: "本章以 LangGraph 官方文档为准，并按当前项目的学习顺序改写："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

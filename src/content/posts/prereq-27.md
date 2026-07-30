@@ -1,6 +1,7 @@
 ---
 title: "27. AI 应用开发地图与进入项目主线"
 published: 2025-10-27
+updated: 2026-07-19
 description: "学：API、Prompt、RAG、Agent、微调的边界。 不学：训练模型。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -27,4 +28,3 @@ Prompt=本次指令；RAG=本次检索资料后回答；Agent=模型在受控代
 为“课程资料问答”写六步数据流。
 ## 下一步
 进入 [环境配置与 PyCharm 使用](../00_环境配置与PyCharm使用.md)，然后按 [项目课程目录](../README.md) 继续。
-

@@ -1,6 +1,7 @@
 ---
 title: "15_LangChain 核心概念与 LCEL 链式语法"
 published: 2026-01-15
+updated: 2026-07-31
 description: "- 每节控制在 5 分钟读完，读不完先跳过"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

@@ -1,6 +1,7 @@
 ---
 title: "16 异步编程深入 — async/await 从会用走向理解"
 published: 2026-01-16
+updated: 2026-07-31
 description: "async def = 可暂停的函数。await = \"你慢慢来，我先忙别的\"。Event Loop = 只一个服务员但能同时服务 10 桌。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

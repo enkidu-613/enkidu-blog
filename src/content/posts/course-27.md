@@ -1,6 +1,7 @@
 ---
 title: "27. LangChain 对话记忆：让模型“记得上文”，但不要把记忆当魔法"
 published: 2026-01-27
+updated: 2026-07-28
 description: "本章参考 LangChain 官方文档，并结合你当前项目改写成学习版："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

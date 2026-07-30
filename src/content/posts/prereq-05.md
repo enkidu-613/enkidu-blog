@@ -1,6 +1,7 @@
 ---
 title: "05. 打开终端与定位目录"
 published: 2025-10-05
+updated: 2026-07-19
 description: "学：打开终端、查看位置、进入项目、列出文件。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -50,4 +51,3 @@ Windows 从开始菜单搜索 **PowerShell**；macOS 在“应用程序→实用
 ## 下一步
 
 [06. 运行第一个 Python 程序与读报错](06_运行第一个Python程序与读报错.md)
-

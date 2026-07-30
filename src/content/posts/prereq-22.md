@@ -1,6 +1,7 @@
 ---
 title: "22. 创建 GitHub 仓库并首次推送"
 published: 2025-10-22
+updated: 2026-07-19
 description: "学：网页建空仓库、添加 origin、首次 push、网页验证。 不学：分支协作。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -33,4 +34,3 @@ git push -u origin main
 本地改一行、提交、再 `git push`，刷新网页确认第二次提交出现。
 ## 下一步
 [23. 克隆、同步、分支与 Pull Request 入门](23_克隆_同步_分支与PullRequest入门.md)
-

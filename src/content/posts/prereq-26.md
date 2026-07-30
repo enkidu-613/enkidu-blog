@@ -1,6 +1,7 @@
 ---
 title: "26. 数据结构选择与性能直觉"
 published: 2025-10-26
+updated: 2026-07-19
 description: "学：应用中的选择直觉。 不学：算法面试题。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -29,4 +30,3 @@ print(messages[0], user_by_id[101], "什么是 RAG" in seen_questions)
 遍历问题列表，用 set 标记“新问题”和“重复问题”。
 ## 下一步
 [27. AI 应用开发地图与进入项目主线](27_AI应用开发地图与进入项目主线.md)
-

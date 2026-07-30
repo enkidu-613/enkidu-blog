@@ -1,6 +1,7 @@
 ---
 title: "Python 高级特性学习笔记"
 published: 2026-01-03
+updated: 2026-07-28
 description: "1. 列表推导式（List Comprehension）"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

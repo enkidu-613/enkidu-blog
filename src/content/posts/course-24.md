@@ -1,6 +1,7 @@
 ---
 title: "24. RAG 评估与指标：怎么知道它真的答得好"
 published: 2026-01-24
+updated: 2026-07-28
 description: "本章参考的是官方/一手文档，并结合你当前项目改写成学习版："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

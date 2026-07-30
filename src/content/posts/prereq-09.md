@@ -1,6 +1,7 @@
 ---
 title: "09. Python 条件、循环与输入"
 published: 2025-10-09
+updated: 2026-07-19
 description: "学：input、if/else、for。不学：函数。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -33,4 +34,3 @@ for task in ["学习", "运行", "复习"]:
 输入分数，输出“及格”或“复习”；再用循环打印三项待办。
 ## 下一步
 [10. Python 函数、参数与返回值](10_Python函数_参数与返回值.md)
-

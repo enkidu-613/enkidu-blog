@@ -1,6 +1,7 @@
 ---
 title: "16. Python 表达式、变量绑定与真值判断"
 published: 2025-10-16
+updated: 2026-07-19
 description: "学：表达式、赋值、返回值、None、真值和显式转换。 不学：指针、C++ 左右值。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -31,4 +32,3 @@ result = 10 if value is None else value
 写 `display_name = name if name else "游客"`，分别测试空文本和正常名字。
 ## 下一步
 [17. Python 函数进阶：Lambda 与闭包](17_Python函数进阶_Lambda与闭包.md)
-

@@ -1,6 +1,7 @@
 ---
 title: "18. Python 类、对象与实例"
 published: 2025-10-18
+updated: 2026-07-19
 description: "学：类、实例、属性、方法、init。 不学：继承体系和手动内存管理。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -37,4 +38,3 @@ print(task.title, task.done)
 为 Task 增加 `describe()` 方法，返回任务标题和完成状态。
 ## 下一步
 [19. Git 安装与首次身份配置](19_Git安装与首次身份配置.md)
-

@@ -1,6 +1,7 @@
 ---
 title: "23. 克隆、同步、分支与 Pull Request 入门"
 published: 2025-10-23
+updated: 2026-07-19
 description: "学：clone、pull、branch、Pull Request。 不学：解决复杂冲突。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -37,4 +38,3 @@ git push -u origin improve-readme
 创建分支，只改 README 一行，按上面流程创建 PR。
 ## 下一步
 [24. 互联网、HTTP、URL 与 JSON](24_互联网_HTTP_URL与JSON.md)
-

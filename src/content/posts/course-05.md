@@ -1,6 +1,7 @@
 ---
 title: "FastAPI CRUD 操作学习笔记"
 published: 2026-01-05
+updated: 2026-07-28
 description: "1. 什么是 CRUD"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

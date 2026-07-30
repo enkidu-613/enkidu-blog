@@ -1,6 +1,7 @@
 ---
 title: "14. 调试 Traceback 与小项目整理"
 published: 2025-10-14
+updated: 2026-07-19
 description: "学：Traceback、最小修复、项目目录。 不学：复杂断点工具。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -31,4 +32,3 @@ ai-beginner/
 故意把 `normalize` 拼错，按四步定位并修复。
 ## 下一步
 [15. Python 程序如何运行：源码、解释器与报错](15_Python程序如何运行_源码解释器与报错.md)
-

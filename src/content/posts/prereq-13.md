@@ -1,6 +1,7 @@
 ---
 title: "13. Python 模块、虚拟环境与依赖"
 published: 2025-10-13
+updated: 2026-07-19
 description: "学：import、.venv、安装包。 不学：线上部署。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -39,4 +40,3 @@ print(normalize(" Hello "))
 把格式化待办函数移到 `task_tools.py` 再导入。
 ## 下一步
 [14. 调试 Traceback 与小项目整理](14_调试Traceback与小项目整理.md)
-

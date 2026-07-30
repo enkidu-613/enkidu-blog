@@ -1,6 +1,7 @@
 ---
 title: "09_RAG 向量数据库入门：给 AI 装上\"外挂大脑\""
 published: 2026-01-09
+updated: 2026-07-28
 description: "你已经学会了用 SQLAlchemy 做精确查询："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

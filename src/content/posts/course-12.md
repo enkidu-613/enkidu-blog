@@ -1,6 +1,7 @@
 ---
 title: "12. FastAPI + Chroma 最小原型"
 published: 2026-01-12
+updated: 2026-07-31
 description: "上一章：双存储架构（SQLite + ChromaDB 协作）"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

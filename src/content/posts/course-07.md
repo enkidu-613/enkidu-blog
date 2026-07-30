@@ -1,6 +1,7 @@
 ---
 title: "代码分层与模块化架构"
 published: 2026-01-07
+updated: 2026-07-31
 description: "1. 为什么要分层？"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

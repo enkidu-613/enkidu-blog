@@ -1,6 +1,7 @@
 ---
 title: "Schema：声明式数据契约"
 published: 2026-03-31
+updated: 2026-06-26
 description: "Schema 是一份“数据应该长什么样”的说明书。"
 tags: ["编程基础", "学习笔记"]
 category: "编程基础"
@@ -140,5 +141,4 @@ Prisma 管数据库结构。
 OpenAPI 管接口结构。
 共同思想是：先声明结构，再让工具帮你校验、生成和转换。
 ```
-
 

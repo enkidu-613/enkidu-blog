@@ -1,6 +1,7 @@
 ---
 title: "10 RAG - ChromaDB 向量数据库实战"
 published: 2026-01-10
+updated: 2026-07-28
 description: "- 理解向量数据库与关系型数据库的核心区别"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

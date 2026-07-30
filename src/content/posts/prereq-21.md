@@ -1,6 +1,7 @@
 ---
 title: "21. GitHub 注册、安全设置与个人主页"
 published: 2025-10-21
+updated: 2026-07-19
 description: "学：注册账号、安全设置、公开和私有仓库。 不学：上传代码；下一章做。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -24,4 +25,3 @@ GitHub account=平台账号；public=所有人可见；private=授权成员可�
 在个人资料 Bio 写一句非敏感的学习目标；保存后刷新确认显示。
 ## 下一步
 [22. 创建 GitHub 仓库并首次推送](22_创建GitHub仓库并首次推送.md)
-

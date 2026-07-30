@@ -1,6 +1,7 @@
 ---
 title: "24. 互联网、HTTP、URL 与 JSON"
 published: 2025-10-24
+updated: 2026-07-19
 description: "学：客户端、服务器、URL、GET/POST、状态码、JSON。 不学：前端框架。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -33,4 +34,3 @@ Content-Type: application/json
 为“课程问答”设计请求 JSON（question、course_id）和响应 JSON（answer、sources）。
 ## 下一步
 [25. 数据库、SQLite 与 SQL 实操](25_数据库_SQLite与SQL实操.md)
-

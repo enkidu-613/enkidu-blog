@@ -1,6 +1,7 @@
 ---
 title: "11. Python 列表、字典与集合"
 published: 2025-10-11
+updated: 2026-07-19
 description: "学：三种容器的选择。 不学：性能公式。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -29,4 +30,3 @@ print("学习" in seen)
 建立三个待办 dict，用循环打印它们的标题。
 ## 下一步
 [12. Python 文件读写与异常处理](12_Python文件读写与异常处理.md)
-

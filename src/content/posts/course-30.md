@@ -1,6 +1,7 @@
 ---
 title: "30. Dify 平台实战：用 Agent 工具完成 Agentic RAG"
 published: 2026-01-30
+updated: 2026-07-28
 description: "本章在 2026-07-22 按 Dify Cloud 最新官方文档和你当前的中文画布核对。以实际 Dify Cloud 画布和最新官方英文文档为准；中文标签用于帮助你在界面中定位。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"

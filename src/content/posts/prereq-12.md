@@ -1,6 +1,7 @@
 ---
 title: "12. Python 文件读写与异常处理"
 published: 2025-10-12
+updated: 2026-07-19
 description: "学：open、with、try/except。不学：数据库。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -33,4 +34,3 @@ except ValueError:
 把三条待办写进文本文件，再读出并打印。
 ## 下一步
 [13. Python 模块、虚拟环境与依赖](13_Python模块_虚拟环境与依赖.md)
-

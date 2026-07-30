@@ -1,6 +1,7 @@
 ---
 title: "25. 数据库、SQLite 与 SQL 实操"
 published: 2025-10-25
+updated: 2026-07-19
 description: "学：表、行、列、主键、CRUD、SQLite。 不学：ORM 和迁移。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
@@ -31,4 +32,3 @@ UPDATE tasks SET done = 1 WHERE id = 1;
 设计 notes 表，含 id、title、content、created_at 四列。
 ## 下一步
 [26. 数据结构选择与性能直觉](26_数据结构选择与性能直觉.md)
-
