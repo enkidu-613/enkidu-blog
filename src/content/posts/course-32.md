@@ -1,104 +1,418 @@
 ---
 title: "32. Hugging Face 生态：模型仓库、本地推理与项目里的 Embedding"
-published: 2026-07-28
+published: 2026-08-01
 description: "Hugging Face 不是一个模型，而是一套围绕模型仓库、模型加载库和推理服务组成的生态；你项目的本地 Embedding 已经在其中。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
 ---
-> 本章目标：你能区分 Hugging Face Hub、Transformers、SentenceTransformers 和 `InferenceClient`，并能解释当前项目为什么已经在使用 Hugging Face 模型生态。
+> 本章目标：你能亲手写出一个最小的本地 Embedding 模型加载器，并区分 Hugging Face Hub、模型 ID、`SentenceTransformer`、Transformers `pipeline()` 和 `InferenceClient`。
 >
-> 本章不做模型微调、LoRA、训练集处理或生产推理集群。先把“选择模型、下载模型、加载模型、推理”这条链跑明白。
+> 学习起点说明：项目里的 `app/embedding.py` 主要由 AI 辅助生成。它是可以复用的项目资产，但“代码在项目里”不等于“你已经掌握”。本章先让你亲手完成最小链路，再回来读懂这份工程封装。
 
-## 权威来源
+## 权威来源与项目版本
 
 | 来源 | 本章采用的结论 |
 | --- | --- |
-| [Hugging Face Hub inference guide](https://huggingface.co/docs/huggingface_hub/main/en/guides/inference) | `InferenceClient` 是调用托管推理服务或兼容端点的 Python 客户端。 |
-| [Hugging Face Hub Models 文档](https://huggingface.co/docs/hub/models) | 模型仓库提供模型卡；用模型卡确认任务、许可证、使用方式与可用推理选项。 |
-| [Transformers Pipeline](https://huggingface.co/docs/transformers/main/pipeline_tutorial) | `pipeline()` 按任务加载预训练模型与预处理组件，适合快速推理验证。 |
-| [SentenceTransformer.encode 参考](https://sbert.net/docs/package_reference/sentence_transformer/SentenceTransformer.html#sentence_transformers.SentenceTransformer.encode) | `encode()` 默认返回 NumPy 向量；可用参数改为 Tensor 或其他输出形式。 |
+| [SentenceTransformer 官方 API](https://www.sbert.net/docs/package_reference/sentence_transformer/model.html) | `SentenceTransformer(...)` 加载模型，`encode()` 把文本转换成向量；`device`、`revision` 和 `normalize_embeddings` 都是正式参数。 |
+| [BGE 中文模型卡](https://huggingface.co/BAAI/bge-base-zh-v1.5) | 短查询检索长文档时可给查询添加检索指令；文档不加；官方示例使用归一化向量。 |
+| [Hugging Face 环境变量](https://huggingface.co/docs/huggingface_hub/en/package_reference/environment_variables) | `HF_HOME`、`HF_HUB_CACHE` 和 `HF_TOKEN` 分别控制 Hugging Face 主目录、模型缓存和访问令牌。 |
+| [InferenceClient 官方 API](https://huggingface.co/docs/huggingface_hub/en/package_reference/inference_client) | `feature_extraction()` 用于远程生成向量，`chat_completion()` 用于聊天模型；两者任务不同。 |
+| [Transformers Pipeline](https://huggingface.co/docs/transformers/main/pipeline_tutorial) | `pipeline()` 是按任务快速加载和调用预训练模型的高层入口。 |
+
+当前 Poetry 环境已经验证：
+
+```text
+sentence-transformers 5.5.1
+transformers 5.9.0
+huggingface-hub 1.15.0
+```
+
+版本不是要求你背的数字。它们的作用是：当教程、IDE 提示和实际运行结果不一致时，先知道应该按哪个版本查官方文档。
 
 ## 一句话理解
 
-Hugging Face 不是一个模型，而是一套围绕模型仓库、模型加载库和推理服务组成的生态；你项目的本地 Embedding 已经在其中。
+Hugging Face Hub 像模型仓库；模型 ID 是仓库地址；`SentenceTransformer` 把仓库里的 Embedding 模型加载成本地 Python 对象；`encode()` 才是真正把文本变成向量的动作。
 
-### 本章学到哪里，不学到哪里
+## 本章学到哪里，不学到哪里
 
-- **本章要会**：区分 Hub 模型 ID、`SentenceTransformer` 模型对象和向量三者的关系、用项目已有的 `get_embedding()` 做本地推理实验、用 `pipeline()` 快速验证分类任务、读模型卡确认任务／语言／许可证／硬件要求。
-- **本章暂不要求**：模型微调与 LoRA、训练集处理、生产推理集群、量化与部署优化。
+### 必须亲手会写
 
-## 先看真实对象长什么样
+- 从 `sentence_transformers` 导入 `SentenceTransformer`。
+- 用模型 ID 创建模型对象。
+- 调用 `model.encode()` 得到向量。
+- 检查向量的类型、维度和部分数值。
+- 写出一个最小的 `get_embedding_demo(text)` 函数。
 
-| 名称 | 它是什么 | 最小代码形态 |
-| --- | --- | --- |
-| Hugging Face Hub | 托管模型、数据集和 Space 的平台 | 浏览 `组织名/模型名` 的模型卡。 |
-| 模型 ID | Hub 上模型的唯一仓库名 | `"BAAI/bge-base-zh-v1.5"` |
-| `SentenceTransformer` | 加载并编码句子的 Python 类 | `SentenceTransformer(model_id)` |
-| `pipeline()` | Transformers 提供的快速任务推理工厂函数 | `pipeline("sentiment-analysis")` |
-| `InferenceClient` | 通过 HTTP 调用托管或兼容推理端点的客户端类 | `InferenceClient(token=...)` |
+### 必须看懂，但不要求完整默写
 
-先记住：模型 ID 是字符串；模型对象是 Python 内存中的对象；直接调用 `model.encode()` 默认得到 NumPy 的 `ndarray`，而本项目的 `get_embedding()` 再调用 `.tolist()` 后返回 Python `list`。三者不是同一个东西。
+- 项目如何根据硬件选择模型。
+- `_model` 为什么可以避免同一进程重复加载模型。
+- 单条编码与批量编码的区别。
+- 为什么模型、版本、维度和预处理必须保持一致。
 
-## 第一关：你的项目已经怎样使用 Hugging Face
+### 本章只需识别
 
-打开 [app/embedding.py](/Users/enkidu/PyCharmMiscProject/app/embedding.py:18)：
+- CUDA、MPS、DirectML 的完整设备检测逻辑。
+- `threading.Lock` 的双重检查写法。
+- 显存不足、设备失败和 CPU 回退的完整工程实现。
+- 模型训练、微调、LoRA、量化和分布式推理。
+
+这条边界很重要：你需要获得“自己会加载并调用模型”的能力，不需要因为 AI 写过一份跨平台封装，就立刻把设备兼容工程全部补完。
+
+## 第一关：先看最小代码长什么样
+
+先不要打开项目里那份较长的 `embedding.py`。下面才是本章真正要求你能亲手写出来的最小链路：
 
 ```python
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("BAAI/bge-base-zh-v1.5", device="mps")
-vector = model.encode("退款需要几天内申请？")
+
+model_id = "BAAI/bge-base-zh-v1.5"
+model = SentenceTransformer(model_id, device="cpu")
+
+embedding = model.encode(
+    "退款需要几天内申请？",
+    convert_to_numpy=True,
+)
+
+print(type(embedding).__name__)
+print(embedding.shape)
+print(embedding[:5])
 ```
 
-这三行的实际含义：
+为了第一次运行结果稳定，这里明确使用 `device="cpu"`。等最小链路跑通后，再让项目的设备检测代码选择 MPS 或 CUDA。
+
+### 逐步看数据怎么变化
 
 ```text
 "BAAI/bge-base-zh-v1.5"
-  -> Hub 模型 ID
+  -> str，Hub 上的模型 ID
 
-SentenceTransformer(...)
-  -> 下载或读取本地缓存，创建 Embedding 模型对象
+SentenceTransformer(model_id, device="cpu")
+  -> 创建 SentenceTransformer 模型对象
 
-model.encode(...)
-  -> 把文本变成 float 向量
+model.encode("退款需要几天内申请？")
+  -> 模型执行推理
+
+embedding
+  -> NumPy ndarray，一维浮点向量
 ```
 
-你的项目没有每个请求都重新下载模型。`get_embedding_model()` 用模块级 `_model` 缓存同一个 `SentenceTransformer` 实例，并用锁避免并发重复加载。这就是为什么启动日志会出现 Embedding 模型预加载。
+这四个对象不能混在一起：
 
-## 第二关：先用本地 Embedding 做一次可验证实验
+| 名称 | Python 形态 | 作用 |
+| --- | --- | --- |
+| `model_id` | `str` | 告诉加载器使用哪个模型仓库。 |
+| `SentenceTransformer` | 第三方类 | 定义如何加载和使用句向量模型。 |
+| `model` | `SentenceTransformer` 实例 | 已加载、可以执行推理的模型对象。 |
+| `embedding` | `numpy.ndarray` | 这次文本推理得到的向量。 |
 
-不用新装库，直接复用项目代码：
-
-```bash
-poetry run python - <<'PY'
-from app.embedding import get_embedding
-
-vector = get_embedding("退款需要几天内申请？")
-print(type(vector).__name__)
-print(len(vector))
-print(vector[:5])
-PY
-```
-
-你应看到：
+你应看到类似结果：
 
 ```text
-list
-一个固定维度的长度
-前几个浮点数
+ndarray
+(768,)
+[若干浮点数]
 ```
 
-这里要分清两层输出：`SentenceTransformer.encode()` 在默认配置（也是项目显式传入的 `convert_to_numpy=True`）下返回 NumPy 的 `ndarray`；项目的 `get_embedding()` 接着调用 `.tolist()`，所以**本章命令打印的是 Python `list`**。这样更容易交给 LangChain、JSON 或向量库接口；它不是 `encode()` 本身的默认 Python 列表。
+`(768,)` 表示它是一条包含 768 个数字的一维向量。不要尝试逐个解释这些浮点数；语义体现在完整向量之间的相对位置和相似度里。
 
-不要试图从单个浮点数读懂语义。语义比较发生在两个完整向量之间，例如余弦相似度；这正是你第 9、10 章已经学过的内容。
+### 这段代码背后发生了什么
 
-## 第三关：Transformers 的 `pipeline()` 长什么样
+第一次创建模型对象时：
 
-`pipeline()` 是快速试模型的入口，不是本项目 RAG 的主 Embedding 接口。
+```text
+模型 ID
+  -> 检查本地缓存
+  -> 缓存不存在时从 Hub 下载文件
+  -> 读取配置和权重
+  -> 把模型加载到 CPU 内存
+  -> 返回 model 对象
+```
+
+后续再次运行程序时，下载缓存通常可以复用，但新的 Python 进程仍然需要重新读取权重并创建模型对象。“不再下载”和“不再加载”不是一回事。
+
+## 第二关：先认识本章真正使用的三个包
+
+### `sentence-transformers`
+
+- 类型：Poetry 管理的第三方包，也是项目的直接依赖。
+- 本章使用：`SentenceTransformer` 类和它的 `encode()` 方法。
+- 解决问题：把文本批量转换成适合相似度计算的句向量。
+- 不负责：保存向量、执行向量检索或生成聊天答案。
+- 本章要求：认识并会用最小加载与编码路径。
+
+最小导入：
+
+```python
+from sentence_transformers import SentenceTransformer
+```
+
+### `transformers`
+
+- 类型：第三方包；当前由 `sentence-transformers` 间接带入项目。
+- 本章使用：只认识高层工厂函数 `pipeline()`。
+- 解决问题：加载和调用文本分类、生成、问答等多种预训练 Transformer 模型。
+- 不负责：替你保存向量库或编排 RAG 流程。
+- 本章要求：会识别，不要求掌握 `AutoTokenizer`、`AutoModel` 和底层池化。
+
+### `huggingface-hub`
+
+- 类型：第三方包；当前也是间接依赖。
+- 本章使用：理解模型下载、缓存、令牌和 `InferenceClient`。
+- 解决问题：连接 Hugging Face Hub 或远程推理端点。
+- 不负责：在本地替你实现 PyTorch 模型计算。
+- 本章要求：会识别 `InferenceClient` 的任务边界，远程调用作为扩展练习。
+
+间接依赖现在可以导入，不代表它永远存在。如果项目正式、长期直接使用 `transformers` 或 `huggingface_hub` 的 API，工程上通常应把它们写成 `pyproject.toml` 的直接依赖，避免上游依赖调整后突然消失。本章只说明这个原则，不修改依赖。
+
+## 第三关：再回来读懂项目里的 AI 生成封装
+
+打开 [app/embedding.py](/Users/enkidu/PyCharmMiscProject/app/embedding.py:1)。它不是简单固定使用 `bge-base + mps`，而是包含一条完整的工程调用链：
+
+```text
+TIER_DISPATCH
+  -> _detect_device()
+  -> _get_model_name()
+  -> _load_model()
+  -> get_embedding_model()
+  -> get_embedding() / get_embeddings()
+```
+
+### 第一步：模型配置表
+
+[TIER_DISPATCH](/Users/enkidu/PyCharmMiscProject/app/embedding.py:26) 是一个普通 Python 字典：
+
+```python
+TIER_DISPATCH = {
+    "cuda_high": {"model": "BAAI/bge-large-zh-v1.5", "batch_size": 64},
+    "cuda_low": {"model": "BAAI/bge-base-zh-v1.5", "batch_size": 16},
+    "mps": {"model": "BAAI/bge-base-zh-v1.5", "batch_size": 32},
+    "directml": {"model": "BAAI/bge-base-zh-v1.5", "batch_size": 16},
+    "cpu": {"model": "BAAI/bge-small-zh-v1.5", "batch_size": 8},
+}
+```
+
+它把“设备等级”映射到“模型 ID 和批量大小”。它只保存配置，不会自己检测设备，也不会自己加载模型。
+
+### 第二步：检测设备
+
+[_detect_device()](/Users/enkidu/PyCharmMiscProject/app/embedding.py:47) 会判断当前机器能否使用 CUDA、MPS 或 DirectML，最后返回类似这样的字典：
+
+```python
+{
+    "tier": "mps",
+    "device_str": "mps",
+    "name": "MPS: arm64",
+}
+```
+
+本章只要求你知道：后面的函数会读取 `tier` 选择模型，读取 `device_str` 指定推理设备。设备探测内部的 PyTorch API 暂不要求重写。
+
+### 第三步：选择模型
+
+[_get_model_name()](/Users/enkidu/PyCharmMiscProject/app/embedding.py:118) 的真实逻辑是：
+
+```python
+def _get_model_name(tier: str) -> str:
+    return os.getenv("EMBEDDING_MODEL_NAME") or TIER_DISPATCH[tier]["model"]
+```
+
+执行顺序：
+
+```text
+如果环境变量 EMBEDDING_MODEL_NAME 有值
+  -> 使用环境变量指定的模型
+
+否则
+  -> 根据设备 tier 从 TIER_DISPATCH 选择模型
+```
+
+### 第四步：真正加载模型
+
+[_load_model()](/Users/enkidu/PyCharmMiscProject/app/embedding.py:127) 内真正创建模型对象的核心仍然只有这一行：
+
+```python
+model = SentenceTransformer(model_name, device=device)
+```
+
+其他代码是在验证设备是否真的可用，以及失败时回退到 CPU。最小学习代码和工程代码的核心动作没有变，工程封装只是增加了保护措施。
+
+### 第五步：缓存模型对象
+
+[get_embedding_model()](/Users/enkidu/PyCharmMiscProject/app/embedding.py:151) 负责：
+
+```text
+_model 已存在
+  -> 直接返回
+
+_model 不存在
+  -> 检测设备
+  -> 选择模型
+  -> 加载模型
+  -> 保存到 _model
+  -> 返回模型对象
+```
+
+`_model` 是模块级变量，只能在当前 Python 进程中复用。进程退出后对象消失；如果 Uvicorn 启动多个 worker，每个 worker 通常会各自加载一份模型。
+
+`_load_lock` 用于防止多个线程同时发现 `_model` 为空、进而重复加载。这个并发保护本章只需识别。
+
+### 第六步：生成向量
+
+[get_embedding()](/Users/enkidu/PyCharmMiscProject/app/embedding.py:184) 的核心逻辑：
+
+```python
+def get_embedding(text: str) -> list[float]:
+    model = get_embedding_model()
+    return model.encode(text, convert_to_numpy=True).tolist()
+```
+
+数据变化如下：
+
+```text
+text: str
+  -> model.encode(...)
+  -> numpy.ndarray
+  -> .tolist()
+  -> list[float]
+```
+
+所以第一关亲手写的代码得到 `ndarray`，项目封装最终返回 `list[float]`。不是模型行为矛盾，而是项目额外调用了 `.tolist()`。
+
+### 你对这份封装需要掌握到什么程度
+
+| 代码 | 本章要求 |
+| --- | --- |
+| `SentenceTransformer(model_id, device=...)` | 必须会写。 |
+| `model.encode(text, convert_to_numpy=True)` | 必须会写。 |
+| 一个最小 `get_embedding_demo(text)` | 必须会写。 |
+| `TIER_DISPATCH` 与模型选择 | 必须看懂。 |
+| `_model` 实例缓存和批量编码 | 必须看懂。 |
+| CUDA/MPS/DirectML 检测 | 只需识别。 |
+| `threading.Lock`、异常回退和显存处理 | 只需识别。 |
+
+## 第四关：模型一致性比“能跑”更重要
+
+项目可能根据设备选择三个不同模型：
+
+| 模型 | 向量维度 | 当前典型设备等级 |
+| --- | ---: | --- |
+| `BAAI/bge-small-zh-v1.5` | 512 | CPU |
+| `BAAI/bge-base-zh-v1.5` | 768 | MPS、DirectML、低显存 CUDA |
+| `BAAI/bge-large-zh-v1.5` | 1024 | 高显存 CUDA |
+
+这带来一个重要风险：如果你在 Fedora CUDA 机器上用 `bge-large` 建库，之后在 Mac 上用 `bge-base` 查询，向量不在同一个向量空间里，不能混用。
+
+### 必须记住的精确规则
+
+```text
+建库和查询必须保持同一套：
+模型 ID + revision + 输出维度 + 查询/文档编码策略
+```
+
+- 维度不同：向量数据库通常直接报维度不匹配。
+- 维度相同但模型不同：可能不报错，但相似度结果没有可靠意义。
+- 模型相同但查询提示词或归一化方式发生变化：检索分布也会变化，需要评估。
+
+这里说的“同一套编码策略”不是要求查询文本和文档文本长得一样。它是指：建库时怎样编码文档、查询时怎样编码问题，都要按事先确定的规则执行；不能今天给查询加指令，明天又随机取消。
+
+稳定知识库更适合在 `.env` 中固定模型：
+
+```dotenv
+EMBEDDING_MODEL_NAME=BAAI/bge-base-zh-v1.5
+```
+
+修改这个值之后，通常需要重新生成文档向量并重建向量集合。不要只替换查询模型后继续使用旧索引。
+
+`.env` 只是普通文本文件。必须由应用在模型库读取环境变量前执行 `load_dotenv()`，或者由启动命令、容器和操作系统直接注入变量，`os.getenv()` 才能读到它。
+
+### `revision` 是什么
+
+模型 ID 指向仓库，`revision` 指向仓库中的具体版本，可以是分支、标签或 commit ID：
+
+```python
+model = SentenceTransformer(
+    "BAAI/bge-base-zh-v1.5",
+    device="cpu",
+    revision="具体的标签或 commit ID",
+)
+```
+
+教程练习可以使用默认版本；生产索引最好保存模型 ID、revision、维度和预处理配置，保证以后能够重现同一套向量。
+
+当前 `app/embedding.py` 还没有把 `revision` 做成配置项。本章先理解工程原则，不要求顺手改造生产封装。
+
+## 第五关：BGE 的查询文本和文档文本并不完全对称
+
+BGE 中文 v1.5 模型卡建议：短查询检索长文档时，可以给查询添加检索指令，文档本身不加。
+
+```python
+from sentence_transformers import SentenceTransformer
+
+
+model = SentenceTransformer("BAAI/bge-base-zh-v1.5", device="cpu")
+
+instruction = "为这个句子生成表示以用于检索相关文章："
+question = "退款需要几天内申请？"
+documents = [
+    "退款须在购买后 7 天内申请。",
+    "会员可以修改个人头像。",
+]
+
+query_vector = model.encode(
+    instruction + question,
+    normalize_embeddings=True,
+)
+document_vectors = model.encode(
+    documents,
+    normalize_embeddings=True,
+)
+
+scores = document_vectors @ query_vector
+print(scores)
+```
+
+这里有两个新参数边界：
+
+- `instruction + question`：给查询增加检索任务说明；文档不增加。
+- `normalize_embeddings=True`：把每条向量归一化为长度 1，随后可以直接用点积比较方向相似度。
+
+BGE v1.5 不加查询指令也能工作，因此当前项目代码不能简单判定为错误。正确做法是保持建库和查询策略一致，再用你已有的 `eval_cases` 比较“加指令”和“不加指令”哪一种更适合当前知识库。
+
+当前 [get_embedding()](/Users/enkidu/PyCharmMiscProject/app/embedding.py:184) 没有传入查询指令，也没有开启 `normalize_embeddings`。这表示项目目前选择的是“原文直接编码”的统一策略；是否升级策略，应先跑评估，再同时调整文档入库和查询路径。
+
+## 第六关：缓存、令牌和进程内对象分别存在哪里
+
+| 名称 | 保存的东西 | 生命周期或位置 |
+| --- | --- | --- |
+| Hugging Face 下载缓存 | 模型配置、权重等文件 | 默认通常在 `~/.cache/huggingface` 下，重启后仍存在。 |
+| `_model` | 已加载的 Python 模型对象 | 当前 Python 进程内，进程退出后消失。 |
+| `HF_TOKEN` | 访问私有或受限资源的凭证 | 环境变量或 Hugging Face 的凭证存储，不应写入 Git。 |
+
+常用环境变量：
+
+```dotenv
+# Hugging Face 数据的主目录
+HF_HOME=/path/to/huggingface
+
+# 只修改 Hub 仓库缓存目录
+HF_HUB_CACHE=/path/to/huggingface/hub
+
+# 私有或受限模型需要的令牌
+HF_TOKEN=hf_xxx
+```
+
+公开模型通常可以匿名下载；私有模型、受限模型或更高访问额度可能需要 `HF_TOKEN`。不要把令牌写进 Python 文件或提交到仓库。
+
+## 第七关：`pipeline()` 是另一种高层入口
+
+`pipeline()` 是 Transformers 提供的工厂函数。它根据任务名称和模型 ID 创建一个可以直接调用的任务对象：
 
 ```python
 from transformers import pipeline
+
 
 classifier = pipeline(
     task="sentiment-analysis",
@@ -109,36 +423,38 @@ result = classifier("I like learning LangGraph.")
 print(result)
 ```
 
-对象关系：
+调用关系：
 
 ```text
-task 字符串
-  -> 指定任务类型
-
-model ID 字符串
-  -> 指定从 Hub 加载哪个模型
-
-pipeline(...)
-  -> 创建可直接调用的任务对象
-
-classifier(text)
-  -> 真正执行推理
+task + model ID
+  -> pipeline(...)
+  -> classifier 对象
+  -> classifier(text)
+  -> 分类标签和分数
 ```
 
-`pipeline()` 适合验证一个预训练任务能否跑通；当你需要控制 tokenizer、模型权重、batch、GPU 内存或训练时，再直接使用 Transformers 的更底层 API。
+它会下载另一套英文情感分类模型，与当前 BGE Embedding 模型不是同一个模型。这个示例只用于认识“按任务快速试模型”的方式，本章不要求必须下载运行，也不要求学习 tokenizer、底层 Transformer 输出和池化。
 
-## 第四关：本地直接加载与 HTTP 推理客户端不是一回事
+典型边界：
 
-### 本地直接加载：权重进入当前 Python 进程
+| 接口 | 更适合 |
+| --- | --- |
+| `SentenceTransformer.encode()` | 句向量、检索和相似度。 |
+| `pipeline()` | 快速验证分类、生成、问答等现成任务。 |
+| Transformers 底层 API | 需要直接控制 tokenizer、模型输出、训练或池化。 |
+
+## 第八关：本地加载和 `InferenceClient` 不是一回事
+
+### 本地模型
 
 ```python
-model = SentenceTransformer("BAAI/bge-base-zh-v1.5", device="mps")
-vector = model.encode("你好")
+model = SentenceTransformer("BAAI/bge-base-zh-v1.5", device="cpu")
+embedding = model.encode("你好")
 ```
 
-模型权重需要下载到本机缓存，并由 `SentenceTransformer` 加载进当前 Python 进程；推理由你的 CPU、MPS 或 CUDA 执行。这正是当前项目 Embedding 的方式。
+权重进入当前机器的 Python 进程，计算消耗当前机器的 CPU、MPS 或 CUDA 资源。
 
-### `InferenceClient`：把请求发给 HTTP 服务
+### 远程 Embedding 服务
 
 ```python
 import os
@@ -147,74 +463,162 @@ from huggingface_hub import InferenceClient
 
 
 client = InferenceClient(
-    provider="together",
-    model="meta-llama/Meta-Llama-3-8B-Instruct",
-    api_key=os.environ["HF_TOKEN"],
+    model="https://embedding.example.com",
+    token=os.environ["TEI_API_KEY"],
 )
-response = client.chat_completion(
-    messages=[{"role": "user", "content": "Explain embeddings in one sentence."}],
-    max_tokens=100,
+
+embedding = client.feature_extraction(
+    "退款需要几天内申请？",
+    normalize=True,
 )
-print(response.choices[0].message.content)
+print(embedding.shape)
 ```
 
-`InferenceClient` 是 HTTP 客户端，不会把模型权重加载进当前 Python 进程。它可以调用三类目标：云端 **Inference Providers**、你部署的专用 **Inference Endpoint**，或本机/内网的兼容 HTTP 服务（例如 OpenAI API 兼容服务器）。实际计算发生在该服务所在的机器上。
+这里的 Python 进程只发送 HTTP 请求；真正的向量计算发生在远程 TEI 服务所在的机器上。你之前部署的 Text Embeddings Inference 就属于这一类服务。
 
-上例把 `provider` 和 `model` 都写明，避免客户端自动挑选提供方；`HF_TOKEN` 从环境变量读取，绝不写进代码或 Git。提供方与模型的可用组合会变化，示例不保证长期可运行。运行前打开该模型的 Hub 模型卡，查看 **Inference Providers** 面板，确认所选 provider 支持该模型和任务；再确认你账号的访问与计费条件。
+`InferenceClient` 还有 `chat_completion()`，但它用于聊天模型：
 
-## 第五关：模型卡应该先看什么
+```text
+feature_extraction()
+  -> 文本转向量
 
-打开一个模型仓库时，按这个顺序检查：
+chat_completion()
+  -> 消息列表转聊天回答
+```
 
-1. **Task**：它是 Embedding、文本生成、分类还是重排序模型？
-2. **Languages**：是否支持你的中文或多语言数据？
-3. **License**：能否用于你的目标场景？
-4. **Usage**：官方推荐使用 `SentenceTransformer`、`pipeline()` 还是特定加载代码？
-5. **Hardware**：模型大小、dtype、CPU/MPS/CUDA 是否可承受？
+不要因为它们都属于 `InferenceClient` 的方法，就把 Embedding 和聊天生成当成同一个任务。
 
-模型名称里有 `embedding` 不等于适合所有 RAG；必须用你自己的 `eval_cases` 检查检索效果。
+### 三种调用方式对比
+
+| 方式 | 权重在哪里 | 计算在哪里 | 当前用途 |
+| --- | --- | --- | --- |
+| `SentenceTransformer` | 当前机器缓存并加载 | 当前 Python 进程所在机器 | 项目本地 Embedding。 |
+| `pipeline()` | 当前机器缓存并加载 | 当前 Python 进程所在机器 | 快速验证其他预训练任务。 |
+| `InferenceClient` | 远程服务管理 | 远程提供方、Endpoint 或 TEI 服务器 | 通过 HTTP 调用模型。 |
+
+## 第九关：看模型卡时检查什么
+
+选择模型时按下面顺序检查：
+
+1. **Task**：Embedding、文本生成、分类还是 Rerank？
+2. **Languages**：是否支持中文和当前业务语料？
+3. **License**：目标用途是否允许？
+4. **Usage**：官方推荐使用哪个库、查询提示词和归一化方式？
+5. **Dimension**：向量维度是多少，是否与现有集合一致？
+6. **Max length**：最大输入长度是否容纳你的 chunk？
+7. **Revision**：是否需要固定具体版本保证可复现？
+8. **Evaluation**：模型卡成绩是否覆盖相似任务？你自己的 `eval_cases` 表现如何？
+9. **Hardware**：模型大小、dtype、CPU/MPS/CUDA 是否可承受？
+
+模型名称里含有 `embedding`，不代表它适合所有 RAG。模型卡帮你筛选候选模型，最终仍要用自己的评估数据决定。
 
 ## 常见坑
 
-1. 把 Hub 当作 Python 库：Hub 是模型仓库平台；`transformers`、`sentence-transformers`、`huggingface_hub` 才是 Python 包。
-2. 用生成模型的 `pipeline()` 代替 Embedding：两者输出和用途不同。
-3. 把 `HF_TOKEN` 写进代码或提交 Git：它是凭证，应放 `.env`。
-4. 首次加载慢就认为代码卡死：模型下载、缓存和权重加载都可能耗时；观察日志和网络状态。
+1. **运行 AI 生成的 `get_embedding()` 就认为自己会加载模型**：这只能证明封装可用；本章还要亲手写最小加载器。
+2. **把模型 ID、模型对象和向量混成一个东西**：它们分别是字符串、Python 实例和数值数组。
+3. **换了模型却继续使用旧向量库**：维度可能报错；即使维度相同，向量空间也可能不兼容。
+4. **把缓存文件和内存模型对象混淆**：缓存还在，不代表新进程不用重新加载权重。
+5. **把 `pipeline()` 当作项目的 Embedding 主接口**：它是通用任务入口，本项目使用 `SentenceTransformer` 做句向量。
+6. **把 `feature_extraction()` 和 `chat_completion()` 混在一起**：前者输出向量，后者输出聊天内容。
+7. **看到设备检测和锁就试图一次性全部掌握**：这些是工程增强，本章只要求先读懂它们服务于什么目标。
 
-## 三遍主动练习
+## 第十关：三遍主动练习
 
-### 1. 读懂
+### 第一遍：读懂
 
-指出 `app/embedding.py` 中哪个是模型 ID、哪个是模型对象、哪个调用真正产生向量。
+不运行代码，先用自己的话走一遍：
 
-### 2. 跟写
+```text
+输入文本
+  -> 谁加载模型？
+  -> 谁真正执行推理？
+  -> encode 返回什么？
+  -> 项目为什么又调用 tolist()？
+```
 
-运行本章的 `get_embedding()` 命令，记录向量长度和前五个值。再用另一句中文文本运行一次，确认长度相同、数值不同。
+完成标准：你能指出模型 ID、模型对象、方法调用和返回向量分别是哪一个对象。
 
-### 3. 独立重写
+### 第二遍：跟写
 
-从 Hub 选择一个中文 Embedding 候选模型，写下模型 ID、任务、语言、许可证和你准备如何用现有 `eval_cases` 验证它。先不要替换生产模型。
+在 `app/huggingface_embedding_demo.py` 中跟写下面的骨架，把注释要求替换成真实代码：
 
-## 本章边界与检查点
+```python
+from sentence_transformers import SentenceTransformer
 
-本章学习使用和选择预训练模型，不学习训练、微调、量化或分布式推理。
 
-你能回答下面四条，就算通过：
+# 1. 写入 BGE base 中文模型 ID
+model_id = ""
 
-1. Hub、模型 ID、`SentenceTransformer` 模型对象和向量分别是什么？
-2. 当前项目的 `_model` 缓存为什么存在？
-3. `pipeline()` 与 `SentenceTransformer.encode()` 的典型任务差异是什么？
-4. 本地加载与 `InferenceClient` 远程推理的资源归属有什么不同？
+# 2. 创建使用 CPU 的 SentenceTransformer 模型对象
+model = None
 
-> 教学方式：具体锚点优先。先运行项目已有的 `get_embedding()`，再理解模型仓库、缓存、设备和远程推理的分工。
+# 3. 把下面的中文问题转换成 NumPy 向量
+embedding = None
+
+print(type(embedding).__name__)
+print(embedding.shape)
+print(embedding[:5])
+```
+
+运行：
+
+```bash
+poetry run python -m app.huggingface_embedding_demo
+```
+
+即时检查：
+
+- 输出类型是 `ndarray`。
+- `bge-base-zh-v1.5` 的单条向量形状是 `(768,)`。
+- 前五个元素是浮点数。
+
+### 第三遍：独立重写
+
+不要看第一关的答案，自己实现：
+
+```python
+def get_embedding_demo(text: str) -> list[float]:
+    """把一条文本转换成 Python 浮点数列表。"""
+```
+
+接口要求：
+
+- 模型对象放在函数外创建，只加载一次。
+- 函数接收一条 `str`。
+- 函数内部调用 `encode()`。
+- 返回 `list[float]`，不是 `ndarray`。
+
+验证代码：
+
+```python
+first = get_embedding_demo("退款需要几天内申请？")
+second = get_embedding_demo("如何修改个人头像？")
+
+assert len(first) == 768
+assert len(second) == 768
+assert first != second
+```
+
+再故意把第一个 `768` 改成 `999`，确认断言真的失败；然后改回正确值。这可以证明验证代码不是摆设。
+
+## 本章通过标准
+
+完成下面四条，才算真正通过，不以 `embedding.py` 已经存在为依据：
+
+1. **核心思想是什么**：能区分 Hub、模型 ID、模型对象和向量。
+2. **解决什么问题**：能解释 `SentenceTransformer` 怎样把预训练模型变成可调用的本地 Embedding 对象。
+3. **为什么不用常见替代方案**：能说明 `pipeline()` 更通用、`InferenceClient` 在远程计算，而本项目需要可控的本地句向量接口。
+4. **在项目里怎么实现**：能独立写出最小加载器，并说出项目从设备检测到 `get_embedding()` 的调用顺序。
+
+额外的动手门槛：`get_embedding_demo(text)` 必须实际运行通过；只会回答概念题不能算完成本章。
 
 ---
 
-## ✅ 四条理解标准
+## 四条理解标准索引
 
-| 标准 | 问题 | 答案在 |
-|------|------|--------|
-| 思想是什么 | Hugging Face 不是单个模型，而是一套围绕模型仓库、模型加载库和推理服务组成的生态 | 一句话理解 |
-| 干什么 | 解决"模型从哪里来、怎么加载、怎么推理、怎么选"的问题——Hub 提供仓库，`SentenceTransformer` / `pipeline()` 提供加载和推理 | 第一关"你的项目已经怎样使用 Hugging Face" |
-| 为什么这么干 | 项目内置的 Embedding 模型 `BAAI/bge-base-zh-v1.5` 已在本地缓存，`get_embedding_model()` 用模块级缓存避免重复加载 | 第一关 |
-| 怎么干 | 抄 `get_embedding()` 做本地 Embedding 推理，或抄 `pipeline("sentiment-analysis")` 快速验证分类任务 | 第二关、第三关 |
+| 标准 | 本章证据 |
+| --- | --- |
+| 思想是什么 | “一句话理解”和第一关的对象变化。 |
+| 干什么 | 最小本地模型加载与 `encode()` 推理。 |
+| 为什么这么干 | 第七、八关对比本地句向量、通用 pipeline 和远程客户端。 |
+| 怎么干 | 第十关跟写与独立重写，以及第三关项目调用链。 |
