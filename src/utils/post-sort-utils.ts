@@ -1,8 +1,22 @@
+import type { PostSection } from "@utils/post-section-utils.ts";
+
 type SortablePost = {
 	slug: string;
 	data: {
 		published: Date | string;
 	};
+};
+
+type SectionedSortablePost = SortablePost & {
+	data: SortablePost["data"] & {
+		section: PostSection;
+	};
+};
+
+const sectionPriority: Record<PostSection, number> = {
+	main: 0,
+	prerequisite: 1,
+	supplement: 2,
 };
 
 export function extractPostNumber(slug: string): number | null {
@@ -32,4 +46,14 @@ export function comparePostsByNumberThenDate(
 	if (numberA !== null) return -1;
 	if (numberB !== null) return 1;
 	return comparePostsByDateThenSlug(a, b);
+}
+
+export function comparePostsBySectionThenNumberThenDate(
+	a: SectionedSortablePost,
+	b: SectionedSortablePost,
+): number {
+	return (
+		sectionPriority[a.data.section] - sectionPriority[b.data.section] ||
+		comparePostsByNumberThenDate(a, b)
+	);
 }

@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { getPostSectionLabel } from "@utils/post-section-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import PostCard from "./PostCard.astro";
 
@@ -9,8 +10,14 @@ let delay = 0;
 const interval = 50;
 ---
 <div class="transition flex flex-col rounded-[var(--radius-large)] bg-[var(--card-bg)] py-1 md:py-0 md:bg-transparent md:gap-4 mb-4">
-    {page.data.map((entry: CollectionEntry<"posts">) => (
-        <PostCard
+    {page.data.map((entry: CollectionEntry<"posts">, index: number) => (
+        <>
+            {(index === 0 || entry.data.section !== page.data[index - 1].data.section) && (
+                <h2 class="px-6 pt-5 text-xl font-bold text-90 md:px-0 md:pt-0">
+                    {getPostSectionLabel(entry.data.section)}
+                </h2>
+            )}
+            <PostCard
                 entry={entry}
                 title={entry.data.title}
                 tags={entry.data.tags}
@@ -23,6 +30,7 @@ const interval = 50;
                 draft={entry.data.draft}
                 class:list="onload-animation"
                 style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
-        ></PostCard>
+            ></PostCard>
+        </>
     ))}
 </div>

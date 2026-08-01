@@ -3,7 +3,7 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import {
 	comparePostsByDateThenSlug,
-	comparePostsByNumberThenDate,
+	comparePostsBySectionThenNumberThenDate,
 } from "@utils/post-sort-utils.ts";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 
@@ -17,10 +17,10 @@ async function getRawSortedPosts() {
 	return sorted;
 }
 
-// Homepage ordering: numbered learning chapters first, then unnumbered posts.
+// Homepage ordering: group learning chapters by section, then chapter number.
 export async function getHomepageSortedPosts() {
 	const sorted = await getRawSortedPosts();
-	return sorted.sort(comparePostsByNumberThenDate);
+	return sorted.sort(comparePostsBySectionThenNumberThenDate);
 }
 
 export async function getSortedPosts() {

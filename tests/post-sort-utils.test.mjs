@@ -3,13 +3,14 @@ import test from "node:test";
 
 import {
 	comparePostsByDateThenSlug,
+	comparePostsBySectionThenNumberThenDate,
 	comparePostsByNumberThenDate,
 	extractPostNumber,
 } from "../src/utils/post-sort-utils.ts";
 
-const post = (slug, published) => ({
+const post = (slug, published, section = "supplement") => ({
 	slug,
-	data: { published: new Date(published) },
+	data: { published: new Date(published), section },
 });
 
 test("extracts only a terminal numeric slug suffix", () => {
@@ -57,6 +58,42 @@ test("sorts unnumbered posts by date and final ties by slug", () => {
 		"notes-a",
 		"notes-b",
 		"notes-z",
+	]);
+});
+
+test("sorts homepage posts by section before chapter number", () => {
+	const posts = [
+		post("prereq-32", "2026-08-01", "prerequisite"),
+		post("main-01", "2025-01-01", "main"),
+		post("tools-99", "2026-08-01", "supplement"),
+	];
+
+	posts.sort(comparePostsBySectionThenNumberThenDate);
+
+	assert.deepEqual(posts.map(({ slug }) => slug), [
+		"main-01",
+		"prereq-32",
+		"tools-99",
+	]);
+});
+
+test("keeps number and date ordering within each homepage section", () => {
+	const posts = [
+		post("main-02", "2026-07-01", "main"),
+		post("main-03", "2025-01-01", "main"),
+		post("prereq-a-01", "2026-07-20", "prerequisite"),
+		post("prereq-01-notes", "2026-07-30", "prerequisite"),
+		post("prereq-b-01", "2026-07-25", "prerequisite"),
+	];
+
+	posts.sort(comparePostsBySectionThenNumberThenDate);
+
+	assert.deepEqual(posts.map(({ slug }) => slug), [
+		"main-03",
+		"main-02",
+		"prereq-b-01",
+		"prereq-a-01",
+		"prereq-01-notes",
 	]);
 });
 
