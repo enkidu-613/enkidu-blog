@@ -5,6 +5,7 @@ description: "JWT 是一张服务器盖章的数字身份卡。服务器不用�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > **这不是用来"背"的安全手册，这是你放在桌面上的外挂菜单。**
 > 忘了 JWT 怎么传？`Ctrl+F` 搜"Bearer"，看比喻，抄模板。

@@ -5,6 +5,7 @@ description: "上一章：FastAPI + Chroma 最小原型（双存储 API 化）"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > **一句话目标**：把"能检索到片段"和"能调大模型"两个独立能力，串成一条自动链。
 

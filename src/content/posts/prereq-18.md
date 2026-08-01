@@ -5,6 +5,7 @@ description: "学：类、实例、属性、方法、init。 不学：继承体�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：类描述一类对象的属性和行为；实例是根据类创建出的具体对象。**
 ## 学什么，不学什么

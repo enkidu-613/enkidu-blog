@@ -5,6 +5,7 @@ description: "LLM 是会被输入影响的文本推理器，不是权限系统�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章不是空泛的"AI 要善良"。  
 > 本章目标是：你写 AI 接口时，知道哪些事可以交给 Prompt，哪些事必须交给后端代码。

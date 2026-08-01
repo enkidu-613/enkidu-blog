@@ -5,6 +5,7 @@ description: "想象你和一个人聊天，但对方每句话都失忆："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 🎯 **对应代码**: `routers/chat_memory.py`
 >

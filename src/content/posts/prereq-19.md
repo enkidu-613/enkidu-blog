@@ -5,6 +5,7 @@ description: "学：安装、版本验证、user.name、user.email。不学：Gi
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：Git 在本机记录代码快照；首次提交前必须告诉 Git 提交者是谁。**
 ## 学什么，不学什么

@@ -5,6 +5,7 @@ description: "本章环境：**macOS + pnpm + Astro/Fuwari 博客 + GitHub + Clo
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: supplement
 ---
 > 本章环境：**macOS + pnpm + Astro/Fuwari 博客 + GitHub + Cloudflare Pages**。
 >

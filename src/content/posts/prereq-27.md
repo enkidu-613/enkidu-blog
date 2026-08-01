@@ -5,6 +5,7 @@ description: "学：API、Prompt、RAG、Agent、微调的边界。 不学：训
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：AI 应用工程师用代码约束输入、补充资料、调用已有模型并交付可靠服务。**
 ## 学什么，不学什么

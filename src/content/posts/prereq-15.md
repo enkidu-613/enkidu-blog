@@ -5,6 +5,7 @@ description: "学：源码、语法、解释器、进程、两类报错。 不�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：你写的是源码文本；Python 解释器读取它、检查语法并在一个进程中执行。**
 ## 学什么，不学什么

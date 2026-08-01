@@ -5,6 +5,7 @@ description: "pytest = 自动帮你验证代码行为有没有被改坏的检查
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > **这不是为了追求 100% 覆盖率，是为了让你改代码时心里有底。**
 > 忘了怎么跑？`Ctrl+F` 搜“终极速查表”。

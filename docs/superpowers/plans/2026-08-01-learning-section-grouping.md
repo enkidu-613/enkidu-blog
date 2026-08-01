@@ -128,23 +128,33 @@ Expected: all tests pass.
 ### Task 4: Synchronize content and verify production output
 
 **Files:**
+- Modify: `tests/test_sync_docs.py`
+- Modify: `scripts/sync-docs.py`
 - Modify: `src/content/posts/*.md`
 
 **Interfaces:**
 - Consumes: section-aware `scripts/sync-docs.py`.
 - Produces: every mapped post with exactly one valid `section` line.
 
-- [ ] **Step 1: Run source synchronization**
+- [ ] **Step 1: Write and pass a worktree-safety regression test**
+
+Assert `DST_DIR` resolves beneath the checkout containing `scripts/sync-docs.py`, then replace the hard-coded main-checkout path with a script-relative repository path.
+
+Run: `mise exec -- python -m unittest tests/test_sync_docs.py`
+
+Expected: the new test fails before the fix and passes afterward.
+
+- [ ] **Step 2: Run source synchronization**
 
 Run: `mise exec -- python scripts/sync-docs.py`
 
 Expected: mapped posts gain the correct section while retaining source-derived dates and bodies.
 
-- [ ] **Step 2: Prove idempotence**
+- [ ] **Step 3: Prove idempotence**
 
 Run the same sync command again and confirm `git diff` does not change between runs.
 
-- [ ] **Step 3: Run the complete verification suite**
+- [ ] **Step 4: Run the complete verification suite**
 
 Run:
 
@@ -159,10 +169,10 @@ git diff --check
 
 Expected: all commands exit 0; the existing `bashr` highlighting warning may remain during content processing.
 
-- [ ] **Step 4: Inspect generated behavior**
+- [ ] **Step 5: Inspect generated behavior**
 
 Confirm generated pagination shows `主线课程`, then `前置知识`, then `补充内容` without intermixing. Confirm `dist/rss.xml` remains publication-date-first.
 
-- [ ] **Step 5: Commit the implementation**
+- [ ] **Step 6: Commit the implementation**
 
 Stage only the specification, plan, tests, scripts, schema, utilities, component, and synchronized posts. Use focused Conventional Commits.

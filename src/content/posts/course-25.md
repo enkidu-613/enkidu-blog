@@ -5,6 +5,7 @@ description: "本章参考官方文档和经典论文，并结合你当前项目
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章目标不是马上学 LangChain Agent 框架。  
 > 本章目标是：你能看懂 Agent 的最小工作循环，知道 Tool / Function Calling / ReAct 分别解决什么问题，并能判断什么时候不该让模型直接行动。

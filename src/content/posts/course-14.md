@@ -5,6 +5,7 @@ description: "上下文窗口是 LLM 的短期记忆容量——装太多会忘�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 阶段：`rag-context-window` | 状态：✅ 已完成（2026-06-03）
 > 

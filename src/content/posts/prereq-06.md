@@ -5,6 +5,7 @@ description: "学：运行 hello.py、读 NameError。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：运行程序是让解释器读取文件；报错先看最后一行、自己的文件名和行号。**
 

@@ -5,6 +5,7 @@ description: "学：文件、文件夹、扩展名、编辑器和解释器。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：代码是文本文件；编辑器负责写它，Python 解释器负责运行它。**
 

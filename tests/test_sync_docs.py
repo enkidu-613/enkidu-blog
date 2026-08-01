@@ -25,6 +25,13 @@ class SyncFileMetadataTests(unittest.TestCase):
         os.utime(source_path, (SHANGHAI_2026_07_31_EPOCH, SHANGHAI_2026_07_31_EPOCH))
         return source_path
 
+    def test_destination_directory_belongs_to_current_checkout(self):
+        repository_root = SCRIPT_PATH.parents[1]
+        self.assertEqual(
+            Path(sync_docs.DST_DIR).resolve(),
+            repository_root / "src" / "content" / "posts",
+        )
+
     def test_inserts_section_and_replaces_published_from_source_mtime(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             directory = Path(temporary_directory)

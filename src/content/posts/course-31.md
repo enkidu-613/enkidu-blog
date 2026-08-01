@@ -5,6 +5,7 @@ description: "Multi-Agent 不是“多开几个模型就更聪明”，而是把
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章目标：你能运行一个 Supervisor + Subagent 最小例子，区分 Subagent、Router、Handoff 三种模式，并读懂状态驱动 Handoff 的完整调用链。
 >

@@ -5,6 +5,7 @@ description: "学：打开终端、查看位置、进入项目、列出文件。
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：终端通过命令在当前目录中启动程序和管理文件。**
 

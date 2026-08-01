@@ -5,10 +5,12 @@ import os
 import re
 import glob
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 SRC_DIR = "/Users/enkidu/PyCharmMiscProject/md"
-DST_DIR = "/Users/enkidu/personal-blog/src/content/posts"
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+DST_DIR = str(REPOSITORY_ROOT / "src" / "content" / "posts")
 
 # Mapping: (source_glob, dst_prefix, number_range)
 # Main courses: 00-32

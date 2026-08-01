@@ -5,6 +5,7 @@ description: "本章会完成："
 tags: ["工具教学", "学习笔记"]
 category: "工具教学"
 draft: false
+section: supplement
 ---
 > 本章环境：**Fedora 44 + NVIDIA RTX 4060 Ti + rootful Podman（所有命令带 `sudo`）+ Hugging Face Text Embeddings Inference（TEI）**。
 >

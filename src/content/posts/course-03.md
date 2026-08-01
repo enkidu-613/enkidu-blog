@@ -5,6 +5,7 @@ description: "1. 列表推导式（List Comprehension）"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 📚 本文档对应代码文件：`py学习_进阶2.py`
 > 

@@ -5,6 +5,7 @@ description: "学：input、if/else、for。不学：函数。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：条件选一条路，循环对多项数据重复同一动作。**
 ## 学什么，不学什么

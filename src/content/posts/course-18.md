@@ -5,6 +5,7 @@ description: "WebSocket = 打电话，不是寄信。一次握手，持久连接
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > **这不是用来"背"的协议手册，是你桌面上的外挂菜单。**
 > 忘了 WebSocket 怎么写？`Ctrl+F` 搜"最小模板"，看类比，抄代码。

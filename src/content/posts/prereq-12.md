@@ -5,6 +5,7 @@ description: "学：open、with、try/except。不学：数据库。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：文件让数据留到下次运行；异常让程序能解释预期的错误。**
 ## 学什么，不学什么

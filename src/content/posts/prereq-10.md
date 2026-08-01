@@ -5,6 +5,7 @@ description: "学：def、参数、return。不学：文件读写。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：函数把可重复步骤取一个名字；参数进来，返回值出去。**
 ## 学什么，不学什么

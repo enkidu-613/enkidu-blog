@@ -5,6 +5,7 @@ description: "Hugging Face 不是一个模型，而是一套围绕模型仓库�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章目标：你能亲手写出一个最小的本地 Embedding 模型加载器，并区分 Hugging Face Hub、模型 ID、`SentenceTransformer`、Transformers `pipeline()` 和 `InferenceClient`。
 >

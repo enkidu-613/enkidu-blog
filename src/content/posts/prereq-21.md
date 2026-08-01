@@ -5,6 +5,7 @@ description: "学：注册账号、安全设置、公开和私有仓库。 不�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：GitHub 是存放远程仓库和协作代码的平台；Git 是本机记录历史的工具。**
 ## 学什么，不学什么

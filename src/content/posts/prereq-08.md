@@ -5,6 +5,7 @@ description: "学：str、int、float、bool 与基础运算。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：变量给数据取名；类型决定数据能做什么运算。**
 

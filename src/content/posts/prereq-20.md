@@ -5,6 +5,7 @@ description: "学：初始化、状态、差异、暂存、提交和放弃未暂
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：工作区是正在改的文件，暂存区是下次快照清单，提交是可回看的历史。**
 ## 学什么，不学什么

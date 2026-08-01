@@ -5,6 +5,7 @@ description: "本章会完成："
 tags: ["工具教学", "学习笔记"]
 category: "工具教学"
 draft: false
+section: supplement
 ---
 > 本章环境：**Fedora 44 + rootful Podman + 本机 TEI `http://127.0.0.1:8080` + Dify Cloud**。
 >

@@ -5,6 +5,7 @@ description: "- 每节控制在 5 分钟读完，读不完先跳过"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 阶段：`langchain` | 状态：🟡 进行中（第一课）
 >

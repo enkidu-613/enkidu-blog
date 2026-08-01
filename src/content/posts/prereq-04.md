@@ -5,6 +5,7 @@ description: "学：绝对路径、相对路径、扩展名。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：路径是电脑找到文件的地址；相对路径以当前目录为起点。**
 

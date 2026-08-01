@@ -5,6 +5,7 @@ description: "学：表、行、列、主键、CRUD、SQLite。 不学：ORM 和
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：数据库把结构化数据保存成可查询的表；SQL 表达你想增删改查什么。**
 ## 学什么，不学什么

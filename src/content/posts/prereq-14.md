@@ -5,6 +5,7 @@ description: "学：Traceback、最小修复、项目目录。 不学：复杂�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：调试不是猜；先复现，再读最后一行异常和自己文件的行号。**
 ## 学什么，不学什么

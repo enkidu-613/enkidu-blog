@@ -5,6 +5,7 @@ description: "1. 什么是 CRUD"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 📚 本文档对应代码文件：`py_CRUD.py`
 > 

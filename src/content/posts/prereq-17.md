@@ -5,6 +5,7 @@ description: "学：函数对象、简单 lambda、闭包。 不学：复杂装�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：函数也是值；lambda 是短函数写法，闭包是仍能使用外层名字的函数。**
 ## 学什么，不学什么

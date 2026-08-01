@@ -5,6 +5,7 @@ description: "学：客户端、服务器、URL、GET/POST、状态码、JSON。
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：客户端用 HTTP 请求把 JSON 发给服务器，服务器处理后再返回 JSON。**
 ## 学什么，不学什么

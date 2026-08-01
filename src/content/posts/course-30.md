@@ -5,6 +5,7 @@ description: "本章在 2026-07-22 按 Dify Cloud 最新官方文档和你当前
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章目标：你能在 Dify 里把知识检索封装成 Agent 可调用的工具，搭出“用户问题 -> Agent -> 检索工具 -> Agent 最终回答”的 Agentic RAG 工作流，并能通过 API 从 FastAPI 调用已发布工作流。
 >

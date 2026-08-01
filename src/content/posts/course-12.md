@@ -5,6 +5,7 @@ description: "上一章：双存储架构（SQLite + ChromaDB 协作）"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 目标：把双存储架构从"脚本"变成"API 接口"，让前端或其他服务能通过网络调用 RAG 能力。
 

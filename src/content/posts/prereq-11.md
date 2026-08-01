@@ -5,6 +5,7 @@ description: "学：三种容器的选择。 不学：性能公式。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：list 保顺序，dict 按名字取值，set 判断是否出现过。**
 ## 学什么，不学什么

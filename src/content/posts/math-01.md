@@ -5,6 +5,7 @@ description: "向量 = 一根箭 = 一个列表"
 tags: ["AI 数学", "学习笔记"]
 category: "AI 数学"
 draft: false
+section: supplement
 ---
 > 复习文档 · ADHD友好 · 从零开始
 

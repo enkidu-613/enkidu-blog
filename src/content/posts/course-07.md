@@ -5,6 +5,7 @@ description: "1. 为什么要分层？"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 📚 本文档对应项目结构：`app/` 包（`app/main.py` + `app/database.py` + `app/models.py` + `app/routers/`）
 > 

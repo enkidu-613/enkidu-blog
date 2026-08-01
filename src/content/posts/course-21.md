@@ -5,6 +5,7 @@ description: "Prompt 是概率性的愿望，Pydantic 是确定性的闸门。 �
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
  	# 21. Prompt Engineering 进阶：结构化输出与防御
 

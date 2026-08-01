@@ -5,6 +5,7 @@ description: "学：应用中的选择直觉。 不学：算法面试题。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：list 保顺序，dict 按唯一键查值，set 判断是否存在；选择取决于问题。**
 ## 学什么，不学什么

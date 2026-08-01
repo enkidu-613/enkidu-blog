@@ -5,6 +5,7 @@ description: "对应代码: dualstoragedemo.py、models.py"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 🎯 **一句话理解**: ChromaDB 负责快速语义检索找碎片ID，SQLite 负责回查完整文档和上下文。各司其职，协作完成 RAG。
 

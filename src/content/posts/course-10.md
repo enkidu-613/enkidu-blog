@@ -5,6 +5,7 @@ description: "- 理解向量数据库与关系型数据库的核心区别"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 ## 学习目标
 

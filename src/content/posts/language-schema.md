@@ -5,6 +5,7 @@ description: "Schema 是一份“数据应该长什么样”的说明书。"
 tags: ["编程基础", "学习笔记"]
 category: "编程基础"
 draft: false
+section: supplement
 ---
 ## 一句话理解
 

@@ -5,6 +5,7 @@ description: "学：本课程的完成方式，以及 AI 应用开发的目标�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：目标不是背概念，而是每次完成一个能运行、能看到结果的小动作。**
 

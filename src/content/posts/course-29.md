@@ -5,6 +5,7 @@ description: "本章以 LangGraph 官方文档为准，并按当前项目的学�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章目标：你能把一个简单流程写成 `State -> Node -> Edge -> compile -> invoke`，并说清它和上一章 `create_agent(...)` 的关系。
 >

@@ -5,6 +5,7 @@ description: "本章参考官方文档，并结合你当前项目改写成学习
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 		# 26. Function Calling 执行 Loop：模型吐出 tool call 后，后端到底做什么
 

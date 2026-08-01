@@ -5,6 +5,7 @@ description: "async def = 可暂停的函数。await = \"你慢慢来，我先�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > **ADHD 友好速览**：你已经每天都在写 `async def` 了——现在要搞懂它背后的"为什么"。
 

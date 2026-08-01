@@ -5,6 +5,7 @@ description: "学：IPO（输入、处理、输出）拆需求。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：程序把明确输入按明确规则处理，再给出可验证输出。**
 

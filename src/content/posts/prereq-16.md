@@ -5,6 +5,7 @@ description: "学：表达式、赋值、返回值、None、真值和显式转�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：表达式会计算出值；Python 变量是名字绑定到对象，不是装数据的固定盒子。**
 ## 学什么，不学什么

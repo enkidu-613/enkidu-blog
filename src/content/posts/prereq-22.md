@@ -5,6 +5,7 @@ description: "学：网页建空仓库、添加 origin、首次 push、网页验
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：remote 是本地仓库认识的远程地址；push 把本地提交上传到该地址。**
 ## 学什么，不学什么

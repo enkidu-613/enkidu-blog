@@ -5,6 +5,7 @@ description: "本章参考 LangChain 官方文档，并结合你当前项目改�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章目标不是马上做复杂长期记忆系统。  
 > 本章目标是：你能把 `messages`、`chat history`、`memory`、`state` 这几个词分清楚，并看懂 LangChain 如何把历史消息自动塞回模型请求里。

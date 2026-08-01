@@ -5,6 +5,7 @@ description: "学：import、.venv、安装包。 不学：线上部署。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：模块把代码分文件；虚拟环境让每个项目的第三方包互不干扰。**
 ## 学什么，不学什么

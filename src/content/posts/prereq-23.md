@@ -5,6 +5,7 @@ description: "学：clone、pull、branch、Pull Request。 不学：解决复�
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：clone 下载仓库副本，pull 获取远程更新，分支让实验不直接影响主线。**
 ## 学什么，不学什么

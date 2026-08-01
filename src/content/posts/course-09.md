@@ -5,6 +5,7 @@ description: "你已经学会了用 SQLAlchemy 做精确查询："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 🎯 **对应代码**: 本章为概念+实战，将创建 `rag_demo.py`
 >

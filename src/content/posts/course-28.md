@@ -5,6 +5,7 @@ description: "本章参考 LangChain 官方文档，并结合你当前项目改�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > 本章目标不是把 Agent 做成生产系统。  
 > 本章目标是：你能看懂 `create_agent(...)` 内部大概替你做了什么，并能把你项目里的知识库搜索函数包装成一个 LangChain Tool。

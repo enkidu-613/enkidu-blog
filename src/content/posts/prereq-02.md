@@ -5,6 +5,7 @@ description: "学：安装一个编辑器、打开文件夹而不是单个文件
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：编辑器是你写、查看和调试项目文件的工作台。**
 

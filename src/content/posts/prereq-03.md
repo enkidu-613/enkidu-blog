@@ -5,6 +5,7 @@ description: "学：安装 Python、用版本命令确认终端找得到它。"
 tags: ["前置知识", "学习笔记"]
 category: "前置知识"
 draft: false
+section: prerequisite
 ---
 > **一句话理解：安装 Python 后，终端才能把 `.py` 文本真正执行成程序。**
 

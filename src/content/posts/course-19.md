@@ -5,6 +5,7 @@ description: "Alembic = 数据库结构的 Git。代码改模型，Alembic 生�
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
+section: main
 ---
 > **这不是用来背命令的数据库手册，是你的数据库版本管理外挂菜单。**
 > 忘了迁移怎么跑？`Ctrl+F` 搜“终极速查表”，按顺序抄命令。
