@@ -40,29 +40,37 @@ def source_mtime_date(src_path):
     )
 
 
-def update_frontmatter_date(frontmatter, published_date):
-	"""Set published to the source date and remove obsolete updated metadata."""
-	lines = frontmatter.splitlines()
-	published_line = f"published: {published_date}"
-	published_pattern = re.compile(r"^published:\s*.*$")
-	updated_pattern = re.compile(r"^updated:\s*.*$")
-	replaced = False
-	retained_lines = []
+def update_frontmatter_metadata(frontmatter, published_date, section):
+    """Set source metadata and remove obsolete updated metadata."""
+    lines = frontmatter.splitlines()
+    replacements = {
+        "published": f"published: {published_date}",
+        "section": f"section: {section}",
+    }
+    patterns = {
+        key: re.compile(rf"^{key}:\s*.*$") for key in replacements
+    }
+    updated_pattern = re.compile(r"^updated:\s*.*$")
+    replaced = set()
+    retained_lines = []
 
-	for line in lines:
-		if updated_pattern.match(line):
-			continue
-		if published_pattern.match(line):
-			if not replaced:
-				retained_lines.append(published_line)
-				replaced = True
-			continue
-		retained_lines.append(line)
+    for line in lines:
+        if updated_pattern.match(line):
+            continue
+        matching_key = next(
+            (key for key, pattern in patterns.items() if pattern.match(line)), None
+        )
+        if matching_key is None:
+            retained_lines.append(line)
+        elif matching_key not in replaced:
+            retained_lines.append(replacements[matching_key])
+            replaced.add(matching_key)
 
-	if not replaced:
-		retained_lines.append(published_line)
+    for key, line in replacements.items():
+        if key not in replaced:
+            retained_lines.append(line)
 
-	return "\n".join(retained_lines) + "\n"
+    return "\n".join(retained_lines) + "\n"
 
 
 def extract_source_body(content):
@@ -100,8 +108,8 @@ def find_source_file_numeric(src_dir, num):
     return matches[0] if matches else None
 
 
-def sync_file(src_path, dst_path, create_fm=None):
-    """Sync source content and source-derived updated date to destination."""
+def sync_file(src_path, dst_path, section, create_fm=None):
+    """Sync source content and source-derived metadata to destination."""
     with open(src_path, "r", encoding="utf-8") as f:
         src_content = f.read()
 
@@ -121,7 +129,7 @@ def sync_file(src_path, dst_path, create_fm=None):
             print(f"  WARNING: No frontmatter template for new file {dst_path}")
             return False
 
-    fm = update_frontmatter_date(fm, source_mtime_date(src_path))
+    fm = update_frontmatter_metadata(fm, source_mtime_date(src_path), section)
     new_content = f"---{fm}---\n{src_body}"
 
     if os.path.exists(dst_path) and dst_content == new_content:
@@ -170,10 +178,10 @@ def get_description_from_source(src_path):
     return ""
 
 
-def add_existing_destination(updates, category, num, src, dst):
+def add_existing_destination(updates, category, num, src, dst, section):
     """Queue an existing mapped destination for idempotent synchronization."""
     if src and os.path.exists(dst):
-        updates.append((category, num, src, dst, None))
+        updates.append((category, num, src, dst, section, None))
 
 
 def main():
@@ -183,13 +191,13 @@ def main():
     for num in range(0, 33):
         src = find_source_file(SRC_DIR, num)
         dst = os.path.join(DST_DIR, f"course-{num:02d}.md")
-        add_existing_destination(updates, "main", num, src, dst)
+        add_existing_destination(updates, "main", num, src, dst, "main")
 
     # 2. Math
     for num in [1]:
         src = find_source_file_numeric(os.path.join(SRC_DIR, "ai学习应用数学"), num)
         dst = os.path.join(DST_DIR, f"math-{num:02d}.md")
-        add_existing_destination(updates, "math", num, src, dst)
+        add_existing_destination(updates, "math", num, src, dst, "supplement")
 
     # 3. Tools
     for num in [1, 2, 3]:
@@ -197,33 +205,33 @@ def main():
         dst = os.path.join(DST_DIR, f"tools-{num:02d}.md")
         if src:
             if os.path.exists(dst):
-                add_existing_destination(updates, "tools", num, src, dst)
+                add_existing_destination(updates, "tools", num, src, dst, "supplement")
             else:
                 # New file, need to create frontmatter
                 title = get_title_from_source(src)
                 desc = get_description_from_source(src)
-                fm = f'\ntitle: "{title}"\npublished: 2026-01-01\ndescription: "{desc}"\ntags: ["AI 应用工程", "学习笔记"]\ncategory: "AI 应用工程"\ndraft: false\n'
-                updates.append(("tools", num, src, dst, fm))
+                fm = f'\ntitle: "{title}"\npublished: 2026-01-01\nsection: supplement\ndescription: "{desc}"\ntags: ["AI 应用工程", "学习笔记"]\ncategory: "AI 应用工程"\ndraft: false\n'
+                updates.append(("tools", num, src, dst, "supplement", fm))
 
     # 4. Language Schema (special: no number prefix)
     src = os.path.join(SRC_DIR, "编程语言基础", "Schema_声明式数据契约.md")
     dst = os.path.join(DST_DIR, "language-schema.md")
-    add_existing_destination(updates, "lang", 0, src, dst)
+    add_existing_destination(updates, "lang", 0, src, dst, "supplement")
 
     # 5. Prerequisites
     prereq_dir = os.path.join(SRC_DIR, "新手需要学习的前置知识")
     for num in range(0, 28):
         src = find_source_file(prereq_dir, num)
         dst = os.path.join(DST_DIR, f"prereq-{num:02d}.md")
-        add_existing_destination(updates, "prereq", num, src, dst)
+        add_existing_destination(updates, "prereq", num, src, dst, "prerequisite")
 
     print(f"Files to update: {len(updates)}")
     print("-" * 60)
 
-    for category, num, src, dst, create_fm in updates:
+    for category, num, src, dst, section, create_fm in updates:
         status = "NEW" if not os.path.exists(dst) else "UPD"
         print(f"[{status}] {os.path.basename(dst)} <- {os.path.basename(src)}")
-        if sync_file(src, dst, create_fm):
+        if sync_file(src, dst, section, create_fm):
             print(f"  ✓ Done")
         else:
             print(f"  ✗ Failed")
