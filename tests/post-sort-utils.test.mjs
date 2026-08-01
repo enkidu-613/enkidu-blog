@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+	comparePostsByDateThenSlug,
 	comparePostsByNumberThenDate,
 	extractPostNumber,
 } from "../src/utils/post-sort-utils.ts";
@@ -56,5 +57,19 @@ test("sorts unnumbered posts by date and final ties by slug", () => {
 		"notes-a",
 		"notes-b",
 		"notes-z",
+	]);
+});
+
+test("keeps the shared non-homepage order strictly date-first", () => {
+	const posts = [
+		post("course-32", "2026-07-28T00:00:00Z"),
+		post("language-schema", "2026-08-01T00:00:00Z"),
+		post("course-31", "2026-07-31T00:00:00Z"),
+	];
+
+	assert.deepEqual(posts.sort(comparePostsByDateThenSlug).map(({ slug }) => slug), [
+		"language-schema",
+		"course-31",
+		"course-32",
 	]);
 });

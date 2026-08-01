@@ -2,16 +2,25 @@ import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils.ts";
-import { comparePostsByNumberThenDate } from "@utils/post-sort-utils.ts";
+import {
+	comparePostsByDateThenSlug,
+	comparePostsByNumberThenDate,
+} from "@utils/post-sort-utils.ts";
 
-// Retrieve posts: numbered learning chapters first, then unnumbered posts by date.
+// Shared ordering for RSS, archive, and article navigation remains date-first.
 async function getRawSortedPosts() {
 	const allBlogPosts = await getCollection("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
 
-	const sorted = allBlogPosts.sort(comparePostsByNumberThenDate);
+	const sorted = allBlogPosts.sort(comparePostsByDateThenSlug);
 	return sorted;
+}
+
+// Homepage ordering: numbered learning chapters first, then unnumbered posts.
+export async function getHomepageSortedPosts() {
+	const sorted = await getRawSortedPosts();
+	return sorted.sort(comparePostsByNumberThenDate);
 }
 
 export async function getSortedPosts() {

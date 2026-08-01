@@ -10,7 +10,10 @@ export function extractPostNumber(slug: string): number | null {
 	return match ? Number.parseInt(match[1], 10) : null;
 }
 
-function compareByDateThenSlug(a: SortablePost, b: SortablePost): number {
+export function comparePostsByDateThenSlug(
+	a: SortablePost,
+	b: SortablePost,
+): number {
 	const dateDifference =
 		new Date(b.data.published).getTime() - new Date(a.data.published).getTime();
 	return dateDifference || a.slug.localeCompare(b.slug);
@@ -24,9 +27,9 @@ export function comparePostsByNumberThenDate(
 	const numberB = extractPostNumber(b.slug);
 
 	if (numberA !== null && numberB !== null) {
-		return numberB - numberA || compareByDateThenSlug(a, b);
+		return numberB - numberA || comparePostsByDateThenSlug(a, b);
 	}
 	if (numberA !== null) return -1;
 	if (numberB !== null) return 1;
-	return compareByDateThenSlug(a, b);
+	return comparePostsByDateThenSlug(a, b);
 }
