@@ -1,11 +1,11 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { getCategoryUrl } from "@utils/url-utils.ts";
 import {
 	comparePostsByDateThenSlug,
 	comparePostsByNumberThenDate,
 } from "@utils/post-sort-utils.ts";
+import { getCategoryUrl } from "@utils/url-utils.ts";
 
 // Shared ordering for RSS, archive, and article navigation remains date-first.
 async function getRawSortedPosts() {
