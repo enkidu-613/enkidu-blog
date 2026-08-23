@@ -4,6 +4,7 @@
 import os
 import re
 import glob
+import json
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -13,8 +14,8 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 DST_DIR = str(REPOSITORY_ROOT / "src" / "content" / "posts")
 
 # Mapping: (source_glob, dst_prefix, number_range)
-# Main courses: 00-32
-MAIN_MAPPING = [(SRC_DIR, "course", list(range(0, 33)))]
+# Main courses: 00-51
+MAIN_MAPPING = [(SRC_DIR, "course", list(range(0, 52)))]
 
 # Subdirectory mappings
 SUB_MAPPINGS = [
@@ -180,20 +181,42 @@ def get_description_from_source(src_path):
     return ""
 
 
+def create_frontmatter(src_path, section, category):
+    """Create metadata for a newly mapped source document."""
+    title = get_title_from_source(src_path)
+    description = get_description_from_source(src_path)
+    return (
+        f"\ntitle: {json.dumps(title, ensure_ascii=False)}\n"
+        "published: 2026-01-01\n"
+        f"section: {section}\n"
+        f"description: {json.dumps(description, ensure_ascii=False)}\n"
+        'tags: ["AI 应用工程", "学习笔记"]\n'
+        f"category: {json.dumps(category, ensure_ascii=False)}\n"
+        "draft: false\n"
+    )
+
+
 def add_existing_destination(updates, category, num, src, dst, section):
     """Queue an existing mapped destination for idempotent synchronization."""
     if src and os.path.exists(dst):
         updates.append((category, num, src, dst, section, None))
 
 
-def main():
+def build_updates():
+    """Build the complete source-to-post synchronization queue."""
     updates = []
 
-    # 1. Main courses (00-32)
-    for num in range(0, 33):
+    # 1. Main courses (00-51)
+    for num in range(0, 52):
         src = find_source_file(SRC_DIR, num)
         dst = os.path.join(DST_DIR, f"course-{num:02d}.md")
-        add_existing_destination(updates, "main", num, src, dst, "main")
+        if src:
+            create_fm = (
+                None
+                if os.path.exists(dst)
+                else create_frontmatter(src, "main", "AI 应用工程")
+            )
+            updates.append(("main", num, src, dst, "main", create_fm))
 
     # 2. Math
     for num in [1]:
@@ -210,9 +233,7 @@ def main():
                 add_existing_destination(updates, "tools", num, src, dst, "supplement")
             else:
                 # New file, need to create frontmatter
-                title = get_title_from_source(src)
-                desc = get_description_from_source(src)
-                fm = f'\ntitle: "{title}"\npublished: 2026-01-01\nsection: supplement\ndescription: "{desc}"\ntags: ["AI 应用工程", "学习笔记"]\ncategory: "AI 应用工程"\ndraft: false\n'
+                fm = create_frontmatter(src, "supplement", "AI 应用工程")
                 updates.append(("tools", num, src, dst, "supplement", fm))
 
     # 4. Language Schema (special: no number prefix)
@@ -226,6 +247,12 @@ def main():
         src = find_source_file(prereq_dir, num)
         dst = os.path.join(DST_DIR, f"prereq-{num:02d}.md")
         add_existing_destination(updates, "prereq", num, src, dst, "prerequisite")
+
+    return updates
+
+
+def main():
+    updates = build_updates()
 
     print(f"Files to update: {len(updates)}")
     print("-" * 60)

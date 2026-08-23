@@ -32,6 +32,22 @@ class SyncFileMetadataTests(unittest.TestCase):
             repository_root / "src" / "content" / "posts",
         )
 
+    def test_maps_new_main_course_sources_and_templates_missing_posts(self):
+        updates = sync_docs.build_updates()
+        new_courses = {
+            Path(destination).name: (section, create_fm)
+            for _, _, _, destination, section, create_fm in updates
+            if Path(destination).name.startswith("course-")
+            and 33 <= int(Path(destination).stem.split("-")[-1]) <= 51
+        }
+
+        self.assertEqual(len(new_courses), 19)
+        for course_name, (section, create_fm) in new_courses.items():
+            self.assertEqual(section, "main", course_name)
+            if not (Path(sync_docs.DST_DIR) / course_name).exists():
+                self.assertIsNotNone(create_fm, course_name)
+                self.assertIn("section: main\n", create_fm)
+
     def test_inserts_section_and_replaces_published_from_source_mtime(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             directory = Path(temporary_directory)
