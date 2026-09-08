@@ -1,6 +1,6 @@
 ---
 title: "27. LangChain 对话记忆：让模型“记得上文”，但不要把记忆当魔法"
-published: 2026-07-28
+published: 2026-08-30
 description: "本章参考 LangChain 官方文档，并结合你当前项目改写成学习版："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
@@ -1191,3 +1191,24 @@ chat history：告诉模型“前几轮用户和助手说过什么”
 | 干什么 | 解决模型本身无状态的问题——模型只看得到本次请求里的 messages，应用不带上历史，模型就不知道前文 | 第二关"四个词不要混" |
 | 为什么这么干 | 全局 `chat_history` 会导致多用户串线、重启丢失、历史无限增长、不方便接 LangChain chain | 第五关"为什么需要 session_id" |
 | 怎么干 | 抄 `session_id -> InMemoryChatMessageHistory` + `RunnableWithMessageHistory` 自动读/写历史 | 第七关"RunnableWithMessageHistory 做了什么" |
+
+---
+
+## 延伸：本章讲的，和"Agent 记忆系统"不是一回事
+
+本章讲的是**短期对话记忆**——用 `session_id` 把历史消息带进下一次调用，解决"模型本身无状态"。
+
+但一个完整 Agent 的记忆系统不只这一层：
+
+```text
+短期记忆（本章）       -> 上下文窗口 / 对话历史，本章已覆盖
+长期记忆（本章没讲）   -> 跨会话持久化：情景记忆 / 语义记忆 / 程序记忆
+知识记忆（09-13 章）   -> RAG 检索，属于长期记忆里的"语义记忆"
+```
+
+**多个 Agent 共享长期记忆时会产生冲突**（同 key 多 value、抢写、版本过期）——那部分不在本章，已单独成文：
+
+> [Agent 上下文上限与多 Agent Memory 冲突](/Users/enkidu/PyCharmMiscProject/md/AI基础概念/02_Agent上下文上限与多Agent_Memory冲突.md:1)
+> ——含记忆系统分层（2.1-2.5）、冲突检测（结构化→粗筛→精筛）、冲突解决技术光谱。
+
+**什么时候去看它**：当你的 Agent 需要"记住跨会话的信息"，或者多个 Agent 要共享一份记忆时。单个聊天机器人用本章的 `session_id` 就够了。

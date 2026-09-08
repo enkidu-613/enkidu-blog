@@ -1,6 +1,6 @@
 ---
 title: "50. AI 服务可靠性：超时、重试、并发、限流与缓存"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：让你的 FastAPI AI 接口在模型慢、外部服务失败、用户并发增多时保持可解释的行为。先实现“失败得干净”，再讨论“跑得更快”。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -88,10 +88,22 @@ async def post_json_with_retry(
                 response = await client.post(url, headers=headers, json=payload)
                 response.raise_for_status()
                 return response
-        except (httpx.TimeoutException, httpx.NetworkError) as exc:
+        except (TimeoutError, httpx.TimeoutException, httpx.NetworkError) as exc:
             if attempt == 2:
                 raise RuntimeError("上游 AI 服务暂时不可用") from exc
             await asyncio.sleep(2 ** attempt)
+        except httpx.HTTPStatusError as exc:
+            status_code = exc.response.status_code
+            retryable = status_code == 429 or 500 <= status_code < 600
+            if not retryable or attempt == 2:
+                raise
+
+            retry_after = exc.response.headers.get("Retry-After")
+            try:
+                delay = float(retry_after) if retry_after is not None else 2 ** attempt
+            except ValueError:
+                delay = 2 ** attempt
+            await asyncio.sleep(min(delay, 30))
 
     raise AssertionError("循环应在成功或最终异常时结束")
 ```
@@ -108,11 +120,11 @@ async with MODEL_SEMAPHORE:
 
 1. 第一个请求进入 `MODEL_SEMAPHORE`，占用一个名额；第九个并发请求会等待前面某个请求结束。
 2. `asyncio.timeout(20)` 给单次 `client.post()` 设 20 秒上限。
-3. 只捕获 `TimeoutException` 和 `NetworkError`，因为它们更可能是临时故障。
-4. `await asyncio.sleep(1)`、`await asyncio.sleep(2)` 就是指数 backoff，避免马上重复轰炸上游。
+3. 网络错误和超时可以重试；HTTP 状态错误要先判断状态码，不能把 401、422 当成瞬时故障。
+4. 429 优先读取 `Retry-After`；没有可用值时再使用指数 backoff，避免马上重复轰炸上游。
 5. 最终失败保留原始异常链：`raise ... from exc`；观测日志也能记录失败步骤。
 
-`400`、`401`、`403`、`422` 通常是请求或权限错误，**不应盲目重试**。`429` 和部分 `5xx` 是否重试，要看上游 API 的 `Retry-After` 和官方说明，不要写死“所有错误重试”。
+`400`、`401`、`403`、`422` 通常是请求或权限错误，**不应重试**。本示例对 `429` 和 `5xx` 做有限重试，但生产代码仍要遵循上游 API 的 `Retry-After` 和官方说明，不要写死“所有错误重试”。
 
 ## 第 2 关：限流放在哪里
 
@@ -176,7 +188,7 @@ FastAPI 的异常处理和后台任务机制以官方文档为准：[Error Handl
 
 ## 本章学到哪里，不学什么
 
-本章要学会：timeout、选择性 retry、backoff、进程内并发限制、限流与缓存的职责边界，以及如何用无网络测试验证失败路径。
+本章要学会：timeout、选择性 retry、backoff、进程内并发限制、限流与缓存的职责边界，以及如何用无网络测试验证失败路径。当前代码切片实际实现了 timeout、retry 和 semaphore；限流与 Redis 缓存先学习设计边界，下一次接入时再实现。
 
 本章暂不实现：分布式任务队列、消息队列消费、熔断器库、全链路 SLO、Kubernetes。只有当你的单服务确实被后台长任务或多副本部署卡住时，才进入这些主题。
 

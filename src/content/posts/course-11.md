@@ -1,6 +1,6 @@
 ---
 title: "11 双存储架构：SQLite + ChromaDB 协作"
-published: 2026-07-28
+published: 2026-09-08
 description: "对应代码: dualstoragedemo.py、models.py"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
@@ -51,9 +51,9 @@ SQLite、SQLAlchemy 和 ChromaDB 都已在前置章节出现；本章不新增�
 
 | 组件 | 类比 | 作用 |
 |------|------|------|
-| **ChromaDB** | 图书馆的索引卡片柜 | 只记录"这本书讲什么主题"，快速找到相关书籍 |
+| **ChromaDB** | 图书馆的索引卡片柜 | 本方案主要用它按向量查找相关记录；Chroma 本身也能保存文本和元数据，并非只能存主题 |
 | **SQLite** | 图书馆的藏书仓库 | 存放完整的书籍内容，供你阅读 |
-| **Embedding** | 给每本书贴上的主题标签 | 把"这本书讲 Python"变成一串数字坐标 |
+| **Embedding** | 文本的数字表示 | 由模型计算向量用于相似比较，不是人工分类标签，也不是唯一编号 |
 
 ### 工作流程
 

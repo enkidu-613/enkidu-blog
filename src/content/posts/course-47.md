@@ -1,13 +1,13 @@
 ---
 title: "47. GitHub Actions：先自动验证，再受控部署"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：让每次推送或 Pull Request 自动运行 Python 测试，并只在测试通过后构建容器镜像。部署到 Fedora 保持手动触发，直到你明确配置 SSH Secret 和服务器目录。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
 draft: false
 ---
-> 本章目标：让每次推送或 Pull Request 自动运行 Python 测试，并只在测试通过后构建容器镜像。部署到 Fedora 保持手动触发，直到你明确配置 SSH Secret 和服务器目录。
+> 本章目标：让每次推送或 Pull Request 自动运行 Python 测试，并只在测试通过后构建容器镜像。当前是 **CI + 手动交付**，不是已经完成的一键自动 CD；部署到 Fedora 保持手动触发，直到你明确配置 SSH Secret 和服务器目录。
 
 ## 一句话心智模型
 

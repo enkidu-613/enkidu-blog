@@ -1,6 +1,6 @@
 ---
 title: "44. 前后端 AI 接口整合：把浏览器请求接到现有 FastAPI"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：用浏览器原生 `fetch` 调用现有的受保护 Dify 路由，理解请求体、Bearer Token、错误分支和 CORS 的职责边界。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -55,15 +55,15 @@ question: string
 | `JSON.stringify` | JavaScript 标准 API | JS 对象 -> JSON 字符串 | 写入 HTTP 请求体 |
 | `response.ok` | `Response` 属性 | 2xx 为 `true` | 在解析成功 JSON 前先分开处理错误响应 |
 | `ApiError` | 本章 TypeScript 类 | 信息、HTTP 状态 | 让 UI 能区分 401、422、500 等失败 |
-| `unknown` | TypeScript 类型 | 未验证的响应数据 | 诚实表达：还未把后端响应稳定建模 |
+| `unknown` | TypeScript 类型 | 先接收未经验证的响应数据 | 运行时校验前不把外部 JSON 当成可信数据 |
 
 ## 为什么返回 `unknown`
 
-当前 `/dify/rag` 的实际返回结构来自 Dify workflow，不要靠猜测写一个很漂亮但错误的 TypeScript interface。正确顺序是：
+当前 `/dify/rag` 的后端服务函数已经把 Dify 的 `data.outputs.answer` 提取成一个 Python `str`；因此当前接口返回的是一个 JSON 字符串，例如 `"请在 7 天内申请退款。"`，不是未经处理的完整 Dify workflow 对象。示例客户端会先用 `unknown` 接收，再运行时确认它确实是字符串。不要靠猜测写一个很漂亮但错误的 TypeScript interface。正确顺序是：
 
 1. 在 Apifox / 浏览器 Network 中查看一次真实成功和失败响应。
-2. 决定后端准备承诺的稳定字段，例如 `answer`、`conversation_id`。
-3. 再为这些字段定义 TypeScript 类型。
+2. 如果后端以后改成对象，先决定准备承诺的稳定字段，例如 `answer`、`conversation_id`。
+3. 再为这些字段定义 TypeScript 类型，并同步修改后端响应模型。
 4. 在运行时对外部 Dify 响应做校验，避免把任意 JSON 当成可信数据。
 
 这与 Python 中 Pydantic 在边界处校验是同一个思想：外部数据先不可信，验证后再进入业务代码。

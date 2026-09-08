@@ -1,6 +1,6 @@
 ---
 title: "36. 多模态 AI：语音问答流程整合"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：把 STT、文本模型和 TTS 串成一条可以运行的业务链路，并看清每一步的数据类型、职责边界和替换点。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -141,6 +141,8 @@ answer_text = extract_final_text(result)
 这样已有的文本 RAG/Agent 不需要知道用户最初是打字还是说话。
 
 ## 第四关：配置并运行最小闭环
+
+> **运行前置条件：** 仓库不自带 `samples/voice.wav`。请先准备一个自己拥有权限使用的短音频并放到该路径，或修改 `PIPELINE_AUDIO_PATH`；同时需要可用的 STT、文本模型和 TTS 凭据。缺少其中任何一项时，不要把失败误判为函数编排错误。
 
 在 `.env` 中配置：
 

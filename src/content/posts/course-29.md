@@ -1,6 +1,6 @@
 ---
 title: "29. LangGraph 状态工作流：把 Agent 的执行过程显式画出来"
-published: 2026-07-28
+published: 2026-09-08
 description: "本章以 LangGraph 官方文档为准，并按当前项目的学习顺序改写："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
@@ -667,7 +667,7 @@ model：调用 search_weather
 
 ### 本节边界
 
-这节的目标是认得真实代码形态和调用链，不要求你现在复制运行完整图。`MessagesState`、`tools_condition` 和完整 Agent 实战会在下一章逐个写出来；现在只需能指出：哪个是普通函数、哪个是框架类、哪个对象真正执行工具。
+这节的目标是认得真实代码形态和调用链，不要求你现在复制运行完整图。`MessagesState` 和 `tools_condition` 已在本节介绍；后续第 30 章是 Dify 画布实践，不是补写这些 Python 对象。现在只需能指出：哪个是普通函数、哪个是框架类、哪个对象真正执行工具。
 
 安全边界没有变：模型 node 只能提出 `tool_call`；`ToolNode` 才执行 Python 工具。LangGraph 不能替你跳过参数校验、权限校验或高风险确认。
 

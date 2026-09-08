@@ -1,6 +1,6 @@
 ---
 title: "35. 多模态 AI：文字转语音（TTS）"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：把一段文本发送给 TTS 接口，理解为什么响应不再是 JSON，而是音频字节，并把它保存成可播放的文件。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -58,7 +58,7 @@ TTS（Text-to-Speech）把文本转换成音频；接口返回的是二进制音
 | --- | --- | --- |
 | TTS | Text-to-Speech，文字转语音 | `/audio/speech` 接口能力 |
 | voice | 音色或声音标识 | 请求体中的 `voice` |
-| response format | 音频输出格式 | `mp3`、`wav`、`pcm` 等，具体取决于模型 |
+| response format | 音频输出格式 | 当前 OpenRouter 通用路径优先按模型文档使用 `mp3` 或 `pcm`；不要假设所有模型都支持 `wav` |
 | audio bytes | 返回的原始二进制音频 | `response.content` |
 | byte stream | 按字节传输的内容 | 本章先一次性接收，再写文件 |
 
@@ -125,7 +125,7 @@ text: str
   -> payload: dict
   -> HTTP POST
   -> response.content: bytes
-  -> output.mp3 / output.wav
+  -> output.mp3 或模型支持的音频文件
 ```
 
 ## 第三关：TTS 和“模型回答”是什么关系

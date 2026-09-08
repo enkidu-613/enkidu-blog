@@ -1,6 +1,6 @@
 ---
 title: "15_LangChain 核心概念与 LCEL 链式语法"
-published: 2026-07-31
+published: 2026-09-08
 description: "- 每节控制在 5 分钟读完，读不完先跳过"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
@@ -96,11 +96,11 @@ rag_chain = (
     | llm
     | StrOutputParser()
 )
-# 一行代码 = 上面 6 个步骤
+# 此链负责检索、组织提示、调用模型和解析输出；没有自动加入 token 截断或事实校验。
 result = rag_chain.invoke("问题")
 ```
 
-**框架的价值**：把"拼水管"变成"拧水龙头"。你不需要记住每一步怎么调，只需要知道**水从哪进、从哪出**。
+**框架的价值**：组合已有步骤并统一调用入口。你仍需知道每一步的输入输出，以及链中有没有实现上下文限制、错误处理和权限校验。
 
 ### ✅ 检查点 1
 - [ ] 能说出 LangChain 解决的核心问题：步骤太多容易漏
@@ -111,7 +111,7 @@ result = rag_chain.invoke("问题")
 ## 二、LCEL 链式语法：`|` 管道符
 
 ### 🎯 一句话理解
-`|` 不是位运算，而是**数据接力棒**——左边步骤的输出，自动变成右边步骤的输入。
+在 LangChain 可组合对象之间，`|` 被实现为串联步骤：左边的输出交给右边作为输入。普通 Python 函数并不因此支持直接用 `|` 相连；整数的 `|` 仍是按位或运算。
 
 ### 📖 生活类比
 
@@ -137,11 +137,21 @@ step3_out = do_step3(step2_out)
 result = do_step4(step3_out)
 ```
 
-**有管道符（LCEL）：**
+**有管道符（LCEL，独立可运行示例，不调用模型）：**
 ```python
-chain = do_step1 | do_step2 | do_step3 | do_step4
-result = chain.invoke(input_data)
+from langchain_core.runnables import RunnableLambda
+
+def clean(text: str) -> str:
+    return text.strip()
+
+def make_question(text: str) -> str:
+    return f"问题：{text}"
+
+chain = RunnableLambda(clean) | RunnableLambda(make_question)
+print(chain.invoke("  什么是 RAG？  "))
 ```
+
+`RunnableLambda` 是 `langchain-core` 中的类，接收普通函数，创建可加入链的对象；本项目已有该依赖。`invoke()` 时框架先调用 `clean`，再把返回的字符串交给 `make_question`。输出应为 `问题：什么是 RAG？`；只构造 `chain` 不执行这两个函数。
 
 **区别**：手搓版是"**命令式**"（每一步都写清楚），LCEL 是"**声明式**"（只声明步骤和顺序，框架帮你跑）。
 
@@ -153,8 +163,7 @@ result = chain.invoke(input_data)
 
 ## 三、六大核心概念逐个拆解
 
-> **读法**：每个概念按"一句话 → 类比 → 代码 → 常见错误"的顺序读。  
-> **如果读一半卡住了，直接跳下一个，不要死磕。**
+> **读法**：优先看代码里的对象、输入和返回值，再读解释。类比只作辅助，可以跳过。当前链路必需的对象若没看懂，先追踪最小例子；旁支扩展可以稍后再看。
 
 ---
 

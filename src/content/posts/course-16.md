@@ -1,6 +1,6 @@
 ---
 title: "16 异步编程深入 — async/await 从会用走向理解"
-published: 2026-07-31
+published: 2026-09-08
 description: "async def = 可暂停的函数。await = \"你慢慢来，我先忙别的\"。Event Loop = 只一个服务员但能同时服务 10 桌。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
@@ -13,7 +13,7 @@ section: main
 
 ## 🎯 一句话理解
 
-**`async def` = 可暂停的函数。`await` = "你慢慢来，我先忙别的"。Event Loop = 只一个服务员但能同时服务 10 桌。**
+**`async def` 定义协程函数；`await` 等待可等待对象，在需要等待时让出执行权；事件循环调度已经就绪的任务。** 写了 `async` 不会自动把同步操作变成非阻塞操作。
 
 ## 本章学到哪里，不学到哪里
 
@@ -27,7 +27,7 @@ section: main
 |---|---|---|
 | 协程函数 | 用 `async def` 定义的可暂停函数 | `async def fetch(): ...` |
 | 协程对象 | 调用协程函数后得到、尚未真正跑完的 awaitable 对象 | `coro = fetch()` |
-| `await` | 等待 awaitable 完成，同时把执行权交回事件循环的语法 | `result = await fetch()` |
+| `await` | 等待可等待对象的语法；对象尚未就绪时可暂停当前协程 | `result = await fetch()` |
 | Task | 被事件循环安排执行的协程包装 | `task = asyncio.create_task(fetch())` |
 | Event Loop | 负责在 I/O 等待期间切换多个 Task 的调度器 | `asyncio.run(main())` 创建脚本入口循环 |
 | 阻塞 I/O | 调用期间占着当前线程，其他协程不能切换的操作 | `time.sleep(1)` |
@@ -52,26 +52,15 @@ asyncio.run(main())
 
 ---
 
-## 📖 餐厅类比（从头到尾串一遍）
+## 直接追踪执行顺序
 
-```
-🍽️ 同步餐厅（def）：
-   服务员端菜到 1 号桌 → 站在旁边等客人吃完 → 才去 2 号桌
-   结果：1 桌占着服务员，其余 9 桌饿死
-
-🍽️ 异步餐厅（async def）：
-   服务员端菜到 1 号桌 → "您慢用！" → 立刻去 2 号桌端菜
-   → 2 号桌上菜 → 去 3 号桌 → 1 号桌举手要加菜 → 立刻过去
-   结果：1 个服务员同时服务 10 桌，没人是"等着"的状态
+```text
+任务 A 开始 → 等待异步网络响应，暂停 A
+→ 事件循环运行已就绪的任务 B
+→ A 的响应就绪 → 等到调度机会后恢复 A
 ```
 
-| 餐厅 | 代码 | 你的项目里 |
-|------|------|-----------|
-| 服务员 | **Event Loop** | Uvicorn 自带，你从来没手动创建过 |
-| 一桌客人 | **Task** | 每个 HTTP 请求自动变成一个 task |
-| "您慢用，我去别桌" | **`await`** | `await client.chat.completions.create(...)` |
-| 客人举手（菜吃完了） | **IO 完成信号** | LLM 返回了一个 chunk |
-| 服务员记性好 | **协程状态保存** | `yield` 之后变量还在，下次循环继续用 |
+这不是“没有等待”，而是 A 等待时不必占住事件循环线程。若 A 调用同步阻塞函数，它仍会占住该线程。Uvicorn 管理服务中的事件循环；独立脚本通常由 `asyncio.run()` 建立入口。
 
 ---
 
@@ -107,19 +96,17 @@ result = await coro               # ✅ 这才真正执行
 ```python
 async def handle_request():
     # 步骤 1
-    user = await db.query(User).first()    # ← 暂停！CPU 去处理别人的请求
+    user = await fetch_user()             # 假设 fetch_user 是异步函数，不是同步 Session.query
     # 数据库返回后，从这里继续 ↓
 
     # 步骤 2
-    reply = await llm.chat(user.question)   # ← 又暂停！
+    reply = await ask_model(user.question)  # 假设 ask_model 是异步函数
     # LLM 返回后，从这里继续 ↓
 
     return reply
 ```
 
-**await 做的两件事**：
-1. 对 Event Loop 说"这件事需要等（IO），我先让出 CPU"
-2. IO 完成后，Event Loop 把结果送回，从 `await` 下一行继续
+这是执行顺序示意，`fetch_user`、`ask_model` 需要具体实现，不能独立运行。`await` 接收可等待对象；需要等待时暂停，完成后在原位置取得结果继续。若对象已经完成，`await` 不一定发生任务切换；同步 `db.query(...).first()` 不能直接加 `await`。
 
 **什么时候用 await**：
 
@@ -137,7 +124,7 @@ async def handle_request():
 
 ```
                   ┌──────────────┐
-                  │  Event Loop  │  ← 只有 1 个！单线程
+                  │  Event Loop  │  ← 此图只画当前线程的循环
                   │  "总调度"     │
                   └──┬──┬──┬──┬──┘
                      │  │  │  │
@@ -149,12 +136,9 @@ async def handle_request():
 ```
 
 **关键认知**：
-- Event Loop **只有一个线程**
-- 同一时刻**只有一个协程在跑 Python 代码**
-- 但 **IO 等待期间不占 CPU**，所以可以快速切换
-- 这叫**并发**（concurrency），不是**并行**（parallelism）
-- 并行 = 多个 CPU 核同时跑（需要 `multiprocessing`）
-- 并发 = 单核快速切换（asyncio 做的就是这个）
+- 一个事件循环在所属线程中调度任务，不表示整个应用只能有一个线程或进程。
+- 对同一个循环，同一时刻执行一个任务；遇到可让出的等待后，可以运行别的就绪任务。
+- 并发指多个任务在一段时间内交错推进；并行指多个任务同时执行。并发不是“只能单核”，并行也不只有 `multiprocessing` 一种实现。
 
 ---
 
@@ -340,9 +324,11 @@ async def fetch_all(urls: list):
 ```
 
 **关键规则**：
-- `gather` 默认一个失败全部失败 → 用 `return_exceptions=True` 防御
-- `create_task` 的异常在 `await` 时抛出 → try/except 包住 await
-- **未 await 的 task 异常会被吞掉** → 永远 await 你的 task
+- `gather` 默认把第一个异常传给等待它的调用方，但不会因此自动取消其他任务；脚本结束又可能取消尚未完成的任务，两件事不要混淆。
+- `return_exceptions=True` 把普通异常作为结果返回，调用方必须检查每项结果，不能把错误对象当成功值。
+- 最容易管理 Task 结果的方式是保存引用并 `await`；也可显式读取结果或用回调处理。没有处理的异常可能产生 `Task exception was never retrieved` 日志，不是可靠地“被吞掉”。
+
+依据：[Python asyncio 任务文档](https://docs.python.org/3/library/asyncio-task.html)。
 
 ---
 
@@ -359,10 +345,10 @@ async def chat(req: ChatRequest):
         media_type="text/event-stream",
     )
 
-# 模式 ❷：async 路由 + 同步 DB（FastAPI 自动处理）✅
+# 模式 ❷：同步路由 + 同步 DB（示意，沿用项目的导入和模型）
 @router.get("/todos")
-async def get_todos(db: Session = Depends(get_db)):
-    # db.query 是同步的，但 FastAPI 在 async 路由里自动放进线程池
+def get_todos(db: Session = Depends(get_db)):
+    # FastAPI 在线程池执行普通 def 路由；这里使用同步数据库会话。
     return db.query(Todo).all()
 ```
 
@@ -370,10 +356,12 @@ async def get_todos(db: Session = Depends(get_db)):
 
 | 路由写法 | 调用同步代码 | 调用异步代码 | 推荐 |
 |----------|:---:|:---:|:---:|
-| `async def` | FastAPI 自动线程池 | ✅ 原生支持 | **首选** |
-| `def` | 直接运行 | ❌ 不能 await | 只有纯同步路由才用 |
+| `async def` | 直接调用仍在事件循环线程，阻塞操作需显式处理 | 可以 `await` | 使用异步驱动时 |
+| `def` | FastAPI 在线程池执行该路由函数 | 不能直接 `await` | 主要使用同步阻塞库时 |
 
-**一句话**：**永远用 `async def` 写 FastAPI 路由**，即使里面调的是同步代码（FastAPI 帮你处理）。
+**一句话**：按调用库选择路由写法；FastAPI 不会扫描 `async def` 函数体，再自动把里面的同步调用搬到线程池。同步依赖的调度也不会改变路由函数体的行为。异步路由混用同步库时，可显式卸载完整同步操作，并正确管理会话等资源。
+
+依据：[FastAPI 官方异步说明](https://fastapi.tiangolo.com/async/#other-utility-functions)。
 
 ---
 
@@ -409,10 +397,10 @@ asyncio.run(main())       # 启动事件循环（脚本入口，FastAPI 不用�
 |------|------|------|
 | `RuntimeWarning: coroutine was never awaited` | 调了 `async def` 没 `await` | `await my_func()` |
 | 在 `async def` 里用 `time.sleep(1)` | `time.sleep` 阻塞整个线程 | `await asyncio.sleep(1)` |
-| 顺序 `await a(); await b()` | 没有并发，白用 async | `await asyncio.gather(a(), b())` |
-| `gather` 一个崩全部崩 | 默认行为 | `gather(..., return_exceptions=True)` |
-| `create_task` 后忘记 `await` | 异常被吞，静默失败 | 永远 `await` 你的 task |
-| 把 `async def` 当 `def` 传给同步库 | 同步库不认识协程 | 用 `run_in_executor` |
+| 独立任务全用顺序 `await` | 没有重叠等待时间；有依赖时顺序执行是正确的 | 仅对独立任务考虑 `gather` |
+| 以为 `gather` 报错会自动取消所有任务 | 异常传播与任务取消不同 | 明确需要收集错误还是取消并等待其他任务 |
+| 创建 Task 后不管理结果 | 可能漏掉异常和清理 | 保存引用并等待或显式处理完成结果 |
+| 把协程函数传给只接收同步函数的库 | 库拿到协程对象却不会执行它 | 使用异步接口；`run_in_executor` 适用于同步函数，不会替你执行协程对象 |
 
 ---
 

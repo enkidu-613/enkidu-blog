@@ -1,6 +1,6 @@
 ---
 title: "48. 生产 RAG：Qdrant、PostgreSQL、元数据与重排"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：把当前“SQLite + Chroma 能检索”的学习型 RAG，升级为可解释、可迁移、可在作品中展示的检索架构。你会先替换向量库，再加入元数据过滤；重排只接入一个清晰的接口，不在本章实现复杂混合检索。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -8,6 +8,8 @@ category: "AI 应用工程"
 draft: false
 ---
 > 本章目标：把当前“SQLite + Chroma 能检索”的学习型 RAG，升级为可解释、可迁移、可在作品中展示的检索架构。你会先替换向量库，再加入元数据过滤；重排只接入一个清晰的接口，不在本章实现复杂混合检索。
+
+> **学习定位：** 本章先建立生产架构和可验证的代码形状；当前仓库仍以 SQLite + Chroma 为可运行基线，Qdrant、PostgreSQL 和真实 reranker 需要后续单独实现，不能把下面的未来文件当成已经存在的项目代码。
 
 ## 课程主线
 
@@ -89,7 +91,7 @@ document_chunks                    vector = embedding
 本章实际开始时再安装依赖；现在不要提前把它写进现有 Chroma 路由。
 
 ```bash
-poetry add qdrant-client psycopg[binary]
+poetry add qdrant-client 'psycopg[binary]'
 ```
 
 `psycopg[binary]` 是 SQLAlchemy 连接 PostgreSQL 所需的数据库驱动；`qdrant-client` 是 Python 到 Qdrant 的客户端。两者都不负责切片、Embedding 或生成答案。
@@ -184,6 +186,14 @@ Qdrant top 20  ->  reranker  ->  top 5  ->  prompt context
 不要一开始让 reranker 看全库。正确顺序是“向量库快速缩小范围，再让较慢但更精细的模型排序”。本章的接口先保持简单：
 
 ```python
+from typing import TypedDict
+
+
+class ChunkHit(TypedDict):
+    content: str
+    score: float
+
+
 def rerank_chunks(question: str, candidates: list[ChunkHit], limit: int = 5) -> list[ChunkHit]:
     """第 48 章先定义职责；下一次实现时接具体 reranker 模型。"""
     return candidates[:limit]

@@ -1,6 +1,6 @@
 ---
 title: "37. LLM 评估：从“感觉还行”到可重复测试"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：把“一个回答看起来不错”变成可重复执行的测试用例，并在不调用任何模型的前提下先检查关键事实、检索命中和工具调用。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -89,7 +89,7 @@ poetry run pytest tests/test_evaluation_contracts.py
 
 1. [追踪] 说出 `expected_fact`、`answer_text`、`answer_passed` 分别来自哪里。
 2. [改] 把示例答案中的 `7 天内申请` 改成 `30 天内申请`，预测哪个字段会变成 `False`。
-3. [独立做] 为“JWT 登录失败应返回 401”或“任务提取必须有 title”写一条 `EvaluationCase`；只使用本章已有字段。
+3. [独立做] 为“退款问题必须命中退款规则”或“任务提取结果必须包含某个关键事实”写一条 `EvaluationCase`；只使用本章已有字段。JWT 状态码和结构化字段完整性属于 HTTP / Schema 契约测试，不在本章硬塞进这个模型。
 
 ## 常见坑
 

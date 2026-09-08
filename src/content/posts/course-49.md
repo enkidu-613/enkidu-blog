@@ -1,6 +1,6 @@
 ---
 title: "49. MCP Server：把项目能力变成受控工具"
-published: 2026-08-24
+published: 2026-08-30
 section: main
 description: "本章目标：把第 48 章的检索服务包装成一个 MCP Tool。Agent 不再直接摸数据库或随意执行函数，而是通过带输入 Schema、权限检查和返回结构的工具边界访问能力。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -8,6 +8,8 @@ category: "AI 应用工程"
 draft: false
 ---
 > 本章目标：把第 48 章的检索服务包装成一个 MCP Tool。Agent 不再直接摸数据库或随意执行函数，而是通过带输入 Schema、权限检查和返回结构的工具边界访问能力。
+
+> **版本边界：** 本章示例锁定 MCP Python SDK 1.x，因为示例使用 `FastMCP`。安装时必须保留 `<2` 上限；当前 SDK 2.x 已将这个服务类和导入路径改名为 `MCPServer`。本章先学协议边界，不在这里同时学习 v1 -> v2 迁移。
 
 ## 课程主线
 
@@ -105,13 +107,13 @@ if __name__ == "__main__":
 4. 服务函数执行 Qdrant filter 和数据库查询，返回结构化的 chunk 信息。
 5. `mcp.run(transport="stdio")` 让 Server 通过标准输入输出与本地 Host 说 MCP 协议；标准输出不能夹杂 `print()` 调试文本。
 
-`FastMCP` 来自官方 MCP Python SDK，是第三方 Poetry 依赖，不是 Python 标准库。开始本章时安装：
+`FastMCP` 来自官方 MCP Python SDK，是第三方 Poetry 依赖，不是 Python 标准库。开始本章时安装 v1 兼容依赖：
 
 ```bash
-poetry add mcp
+poetry add "mcp[cli]>=1.28,<2"
 ```
 
-官方 SDK 的安装、`FastMCP` 与 transport 写法应以当前版本文档为准：[MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)、[MCP 规范](https://modelcontextprotocol.io/specification/2025-06-18)。
+如果你看到教程使用 `from mcp.server import MCPServer`，那是 v2 写法，不要和本章的 `FastMCP` 混用。官方 v1 文档、安装方式和 v2 迁移说明见：[MCP Python SDK v1](https://py.sdk.modelcontextprotocol.io/v1/)、[MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)、[v1 -> v2 迁移说明](https://py.sdk.modelcontextprotocol.io/whats-new/)。协议版本以你锁定的 SDK 文档为准。
 
 ## 第 2 关：参数校验不等于授权
 
@@ -159,9 +161,78 @@ MCP Tool:         外部 Host 如何通过协议发现并调用你的能力
 
 三者能串在一起，也能单独出现。比如：你的 LangGraph Agent 可以继续使用 LangChain Tool；另一个 IDE Agent 通过 MCP 调用同一个 `retrieval_service`。核心业务函数只维护一份。
 
+## 第 5 关：MCP 之外——Agent 之间怎么通信（A2A / ANP）
+
+MCP 解决的是**"Agent 怎么调用一个工具"**。但还有另一个问题它不管：
+
+```text
+Agent A 想让 Agent B 帮忙做一件事 —— 它俩怎么找到对方、怎么派活、怎么交差？
+```
+
+这就是 **A2A** 和 **ANP** 要解决的。你至少要认得这两个名字。
+
+### 一句话区分三个协议
+
+| 协议 | 解决什么 | 生活类比 |
+| --- | --- | --- |
+| **MCP** | Agent → **工具**（能力接入） | USB 接口：插上设备就能用 |
+| **A2A** | Agent → **Agent**（任务委派） | 工作交接单：把活派给同事 |
+| **ANP** | Agent ↔ **Agent 网络**（开放互联） | 行业黄页 + 名片交换网络 |
+
+> 类比：MCP 是"你会用哪些工具"（螺丝刀、电钻）；A2A 是"你怎么把活派给另一个人"（写清楚需求、对方做完交回来）；ANP 是"你怎么在整座城市里找到会干这活的人"。
+
+### A2A（Agent2Agent）：Agent 之间的任务委派
+
+三个核心概念，记住就够：
+
+| 概念 | 是什么 | 类比 |
+| --- | --- | --- |
+| **Agent Card** | 一个 JSON 名片，声明"我是谁、我能干什么、怎么联系我" | 名片 / 能力说明书 |
+| **Task** | 一次委派的工作单元，有生命周期（已提交→进行中→完成/失败） | 工单 |
+| **Artifact** | 任务产出的结果（文档、数据、文件） | 交付物 |
+
+最小流程：
+
+```text
+1. 发现：  A 拿到 B 的 Agent Card（知道 B 能干什么）
+2. 委派：  A 创建一个 Task，派给 B
+3. 协作：  B 执行，过程中可以回传状态/追问
+4. 交付：  B 返回 Artifact，Task 标记完成
+```
+
+**和 MCP 的关系**：不是替代，是**两层**。B 接到 A 派来的活之后，它自己内部照样用 MCP 调工具。
+
+```text
+Agent A --A2A--> Agent B --MCP--> 工具/数据
+  （派活）          （干活时调工具）
+```
+
+### ANP（Agent Network Protocol）：更开放的 Agent 网络
+
+ANP 想解决的是**跨组织、跨平台**的 Agent 互联——不止你公司内部两个 Agent 协作，而是任意两个 Agent 都能互相发现和通信。
+
+它比 A2A 更强调：
+
+| 特性 | 说明 |
+| --- | --- |
+| **去中心化身份** | Agent 自己持有身份凭证，不依赖某个中心平台发号 |
+| **开放发现** | 通过公开的方式找到其他 Agent，而不是在封闭目录里 |
+| **端到端加密** | 跨网络通信时的安全基础 |
+
+### 三者对比（一张表收尾）
+
+| 维度 | MCP | A2A | ANP |
+| --- | --- | --- | --- |
+| 通信双方 | Agent ↔ 工具 | Agent ↔ Agent | Agent ↔ Agent 网络 |
+| 主导方 | Anthropic | Google | 开源社区 |
+| 成熟度 | **高**（你已实操） | 中（大厂在推） | 低（早期） |
+| 你当前要不要学 | ✅ 已学 | 了解概念即可 | 知道有这东西就行 |
+
+**本章边界**：A2A / ANP 只要求你**认得名字和定位**，不要求你现在实现。你项目里 31 章的 Subagent 是同一进程内的多 Agent 协作（LangGraph 的 `runtime.state` 传递），不需要 A2A 协议。等你要做"跨服务、跨组织的 Agent 协作"时再回来深入。
+
 ## 本章学到哪里，不学什么
 
-本章要学会：MCP 的四个角色、`FastMCP` 的代码形态、业务层与协议适配层分离、参数校验和授权的区别。
+本章要学会：MCP 的四个角色、v1 `FastMCP` 的代码形态、业务层与协议适配层分离、参数校验和授权的区别。
 
 本章暂不实现：公开网络 MCP、OAuth、动态工具市场、让 Agent 自动执行高权限命令。先把只读检索工具做对，才有资格增加写操作。
 

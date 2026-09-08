@@ -1,6 +1,6 @@
 ---
 title: "❌ 只靠 Prompt —— \"概率性愿望\""
-published: 2026-07-31
+published: 2026-09-08
 description: "Prompt 是概率性的愿望，Pydantic 是确定性的闸门。 你把愿望写进 Prompt，闸门保证出来的东西一定符合格式。"
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
@@ -9,8 +9,7 @@ section: main
 ---
  	# 21. Prompt Engineering 进阶：结构化输出与防御
 
-> **这不是用来"背"的 Prompt 大全，是你桌面上的外挂菜单。**
-> 忘了 `Literal["low","medium","high"]` 怎么写？`Ctrl+F` 搜"Schema"，看类比，抄模板。
+> 本章按真实输入、模型输出和校验结果学习，不要求背 Prompt 模板。忘了 `Literal["low","medium","high"]` 怎么写，可以搜索 Schema，先看代码与字段含义。
 
 ---
 
@@ -27,7 +26,7 @@ section: main
 
 ## 🎯 一句话理解
 
-**Prompt 是概率性的愿望，Pydantic 是确定性的闸门。** 你把愿望写进 Prompt，闸门保证出来的东西一定符合格式。
+**Prompt 指导模型生成，Pydantic 按已声明的规则解析和校验数据。** 通过校验表示满足这些规则，不表示事实、权限或业务判断一定正确。
 
 ### 本章学到哪里，不学到哪里
 
@@ -58,28 +57,23 @@ section: main
 ## 📖 第一关：概率性约束 vs 确定性校验
 
 ### 思想（四条理解标准 #1）
-**LLM 输出是概率性的——它"大概率"返回 JSON，但不保证。Pydantic 校验是确定性的——不符合就报错，绝不放过。**
+只用自然语言要求 JSON 不能保证输出合规；数据进入 Pydantic 校验入口后，会按声明的字段类型和约束处理，无法满足规则时抛出异常。
 
 ### 一句话
-Prompt 说"请返回 JSON"≈ 你跟厨师说"菜别太咸"。Pydantic 校验 = 实验室化验含盐量，超标直接打回。
+这里的 Schema 就是数据结构与约束，例如 `priority` 只能是 `low`、`medium`、`high`。Pydantic 校验的是你写下的规则，不是自动发现所有业务错误。
 
-### 生活类比
+### 直接看输入与结果
 
-```
-Prompt（概率性约束）:
-  你：（对餐厅服务员）"麻烦少放盐"
-  厨师：加了一小勺…（他觉得够少了，但你还是觉得咸）
-  结果：有时候刚好，有时候偏咸，全看厨师手感
-
-Pydantic（确定性校验）:
-  你：（把菜送进化验机）盐度 > 0.5%？
-  化验机：❌ 超标！退回重做！
-  结果：端上桌的菜盐度一定 ≤ 0.5%，100% 保证
+```text
+声明 priority: Literal["low", "medium", "high"]
+输入 priority="high" → 满足该字段规则
+输入 priority="urgent" → 不满足该字段规则，校验报错
+输入 priority="high" 但真实任务并不紧急 → 类型校验不能判断这个业务事实
 ```
 
 **同理：**
 - Prompt 里写"请返回 JSON"→ 模型**大概率**返回 JSON，但偶尔会多一个解释前缀、少一个引号、或直接输出纯文本
-- Pydantic 校验 → 不是合法 JSON？不是指定字段？拒绝，报 `ValidationError`
+- Pydantic 默认可做部分类型转换，也默认忽略额外字段，不是遇到所有输入差异都拒绝。若业务需要拒绝额外字段，要显式配置；本章不要把“符合 Schema”理解成“原始输入一字不差”。参见 [Pydantic 模型文档](https://docs.pydantic.dev/latest/concepts/models/)。
 
 ### 💻 核心对比
 
@@ -212,7 +206,7 @@ TaskExtractionResult(title="写代码", priority="HIGH", tags=[])   # 大小写�
 TaskExtractionResult(title="摸鱼", priority=1, tags=[])          # 数字不是字符串
 ```
 
-> **为什么用 `Literal` 而不是 `str`？** `str` 接受任意字符串——模型返回 "urgent"、"🔥🔥🔥"、"超级紧急！！" 全合法。`Literal` 把"合法集合"缩小到三个值，模型输出一旦偏离 = Pydantic 直接拒绝 = 你的代码永远不会处理非法值。
+> **为什么用 `Literal` 而不是 `str`？** `str` 不限制字符串内容；`Literal` 把这个字段限制为列出的值。前提是数据确实经过校验、程序没有绕过检查或在之后随意修改字段。它不保证业务上的优先级判断正确。
 
 ### 🔍 逐行拆解 — `Field(description=...)`
 
@@ -455,36 +449,20 @@ prompt = ChatPromptTemplate.from_messages([
 ## 📖 第四关：temperature 与 top_p
 
 ### 思想（四条理解标准 #4）
-**temperature 控制"敢不敢冒险"，top_p 控制"候选池有多大"。** 抽取任务用低温（0），创作任务用高温（0.7-0.9）。
+**temperature（温度）调节生成时的采样分布；top_p（核采样阈值）限制候选 token 的累计概率范围。** 它们不是模型的情绪，也不是事实正确率参数。
 
 ### 一句话
-temperature=0 时模型每次都选最可能的词（一致性高），temperature=1 时小概率词也可能被选中（有惊喜也有惊吓）。
+较低温度通常让选择更集中，较高温度通常增加多样性；设置为 0 也不保证每次回答完全相同。参数是否支持和具体范围要看所选服务与模型。
 
-### 生活类比
+### 用数字看 top_p
 
-```
-temperature = 0（冰水模式）:
-  你在麦当劳点"巨无霸套餐"→ 永远拿到：巨无霸 + 中薯 + 中可
-  每次一样，毫无惊喜，也不会有惊吓
-
-temperature = 1（沸水模式）:
-  你在麦当劳点"巨无霸套餐"→ 可能拿到：
-    巨无霸 + 大薯 + 雪碧（不错！）
-    麦香鱼 + 小薯 + 咖啡（？？？）
-  有惊喜也有惊吓
-
-temperature = 0.7（温热模式，创作推荐）:
-  大部分时候正常，偶尔给你换个薯条大小，无伤大雅
+```text
+假设候选 token A、B、C、D 的概率是 50%、30%、15%、5%
+top_p=0.9：按概率从高到低累计，A+B=80% 还不够
+继续保留 C，累计达到 95%，再在保留候选中采样
 ```
 
-```
-top_p = 0.9（核采样）:
-  把所有可能的词按概率从高到低排
-  只保留"累积概率到 90%"的那些词，后面的全砍掉
-  比如：巨无霸(50%) + 麦香鱼(30%) + 双层吉士(10%) = 90%
-       麦香鸡(5%) 和剩下的都砍掉
-  然后在这池子里按概率抽一个
-```
+所以它不是“保留 90% 数量的词”，也不要求累计恰好等于 90%。token 是分词后的单位，不一定是完整单词。来源：[DeepSeek 采样参数说明](https://api-docs.deepseek.com/api/create-chat-completion/)。
 
 ### 💻 代码对比
 
@@ -494,7 +472,7 @@ llm_extract = ChatDeepSeek(
     model="deepseek-ai/DeepSeek-V3.2",
     api_base="https://api-inference.modelscope.cn/v1",
     api_key=os.getenv("MODELSCOPE_API_KEY"),
-    temperature=0,        # ← 确定性输出，每次结果几乎一样
+    temperature=0,        # 降低采样变化，仍需校验结果
     streaming=False,
 )
 
@@ -503,16 +481,16 @@ llm_creative = ChatDeepSeek(
     model="deepseek-ai/DeepSeek-V3.2",
     api_base="https://api-inference.modelscope.cn/v1",
     api_key=os.getenv("MODELSCOPE_API_KEY"),
-    temperature=0.8,      # ← 有变化，但不太离谱
-    streaming=True,       # 创意写作通常需要流式
+    temperature=0.8,      # 多样性起始值，效果需要实际比较
+    streaming=True,       # 逐段接收输出，与是否创作是两个独立选择
 )
 ```
 
 ### 🔍 逐步拆解
 
 1. **temperature 原理**（不需要背）：把模型输出的概率分布"压扁"或"拉尖"。temperature→0，分布变尖（最高概率的词几乎必选）；temperature→∞，分布变平（所有词等概率）
-2. **top_p 原理**（不需要背）：把所有候选词按概率排序，只保留累积概率达到 P 的一批，砍掉长尾。top_p=0.9 意思是只考虑"占了 90% 概率的那些词"
-3. **实战规则**：**通常只调 temperature，top_p 保持默认。** 两个同时调会让调试变成玄学
+2. **top_p 原理**（不需要背）：把候选 token 按概率排序，保留累计概率达到阈值的候选集合。例如阈值 0.9，保留集合的累计概率可能超过 90%，不要求恰好等于 90%。
+3. **实战规则**：先只改一个采样参数，其他保持不变，才能判断是哪项改变影响了结果。
 4. **如何选值**：
 
 | 场景 | temperature | 原因 |
@@ -521,7 +499,7 @@ llm_creative = ChatDeepSeek(
 | 翻译 / 摘要 | 0.1 - 0.3 | 基本确定，允许少量措辞变化 |
 | 通用对话 | 0.5 - 0.7 | 自然但有逻辑 |
 | 创意写作 / 头脑风暴 | 0.7 - 0.9 | 需要多样性和惊喜 |
-| 完全随机 | 1.0+ | ⚠️ 少有实用场景，输出可能语无伦次 |
+| 更高多样性实验 | 由服务范围决定 | 不表示完全随机；需观察任务质量与稳定性 |
 
 ### ⚠️ 常见错误
 

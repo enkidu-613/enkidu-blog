@@ -1,6 +1,6 @@
 ---
 title: "45. Vue3 AI 流式交互：浏览器如何边收边显示 SSE"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：把现有 `POST /ai/chat` 的 SSE 输出接到一个 Vue3 组件，支持逐字显示与用户中断。你已有 Vue3 / TypeScript 基础，本章只补 AI 请求特有的流读取与取消。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -64,7 +64,7 @@ data: {"type":"answer","content":"..."}\n\n
 
 ## 最小运行方式
 
-这两个文件是可复制进 Vue3 项目 `src/api/` 与 `src/components/` 的模板，当前 Python 项目本身没有 Vite 前端，因此不能在本仓库直接运行 Vue 页面。
+这两个文件是可复制进 Vue3 项目 `src/api/` 与 `src/components/` 的模板，当前 Python 项目本身没有 Vite 前端，因此不能在本仓库直接运行 Vue 页面。组件从 `../api/stream_ai` 引入网络函数；不要把两个文件复制到同一个目录。
 
 把组件挂到你的 Vue 页面后：
 
@@ -72,7 +72,7 @@ data: {"type":"answer","content":"..."}\n\n
 <AiChatPanel api-base-url="http://127.0.0.1:8000" />
 ```
 
-启动 FastAPI 后发送一句问题。预期现象：回答会逐段出现；点击“停止”会触发 `AbortController.abort()`，不再等待服务端结束。
+启动 FastAPI 后发送一句问题。预期现象：回答会逐段出现；点击“停止”会触发 `AbortController.abort()`，浏览器不再等待这次响应。它不等于保证服务端已经停止上游模型调用；要做到服务端取消，还需要后端显式处理请求取消和上游客户端的取消传播。
 
 ## 边界
 

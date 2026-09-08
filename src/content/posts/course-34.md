@@ -1,6 +1,6 @@
 ---
 title: "34. 多模态 AI：语音转文字（STT）"
-published: 2026-08-24
+published: 2026-08-26
 section: main
 description: "本章目标：把一个本地音频文件发送给语音识别接口，拿到文字转录结果，并理解音频字节、Base64、JSON 响应和文本链路之间的关系。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -159,6 +159,8 @@ answer = text_agent.invoke({"messages": [
 > STT 把一种输入模态转换为文本，后面的文本 RAG/Agent 可以继续复用。
 
 ## 第四关：配置并运行
+
+> **运行前置条件：** 仓库不自带 `samples/voice.wav`，因为音频文件通常包含版权或个人内容。请准备一个自己拥有权限使用的短音频，保存到 `samples/voice.wav`，或把环境变量改成你的实际路径；没有音频文件时只能阅读和编译示例，不能完成真实 STT 请求。
 
 在 `.env` 中配置：
 

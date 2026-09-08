@@ -1,6 +1,6 @@
 ---
 title: "33. 多模态 AI：从文字请求到图像理解"
-published: 2026-08-24
+published: 2026-09-08
 section: main
 description: "本章目标：亲手看懂并发送一次“文字 + 图片”的模型请求，理解多模态输入的 Python 形态、模型能力边界和项目里的调用位置。"
 tags: ["AI 应用工程", "学习笔记"]
@@ -27,7 +27,7 @@ draft: false
 
 | 已经会的内容 | 本章新增能力 | 暂时不展开 |
 | --- | --- | --- |
-| `ChatDeepSeek`、`HumanMessage`、模型配置、Hugging Face 模型对象 | 把图片作为消息内容的一部分交给支持视觉的模型 | 音频、视频、视觉向量库、模型训练、复杂多模态 Agent |
+| `ChatOpenAI`、`HumanMessage`、模型配置、Hugging Face 模型对象 | 把图片作为消息内容的一部分交给支持视觉的模型 | 音频、视频、视觉向量库、模型训练、复杂多模态 Agent |
 
 本章产物：
 
@@ -40,11 +40,16 @@ draft: false
 - [Hugging Face：Multimodal processors](https://huggingface.co/docs/transformers/main/multimodal_processing)：`Processor` 会把 tokenizer 与图片、音频等预处理组件组合起来。
 - [Hugging Face：Image-text-to-text](https://huggingface.co/docs/transformers/main/tasks/image_text_to_text)：`image-text-to-text` pipeline 用图片和文字生成文字结果。
 
-本项目当前使用 LangChain 消息对象和 `ChatDeepSeek`。消息的具体图片字段是否被接受，还取决于你配置的模型供应商和模型本身；`MODEL_NAME` 能生成文字，不代表它一定能看图。需要视觉能力时，优先单独设置：
+本项目当前使用 LangChain 消息对象和 `ChatOpenAI`。它通过 OpenAI-compatible Chat Completions 接口连接你配置的视觉模型；消息的具体图片字段是否被接受，还取决于供应商和模型本身。普通文本模型能生成文字，不代表它一定能看图。需要视觉能力时，优先单独设置：
 
 ```dotenv
 VISION_MODEL_NAME=你的视觉语言模型名称
+VISION_API_KEY=你的视觉模型密钥
+VISION_API_BASE=https://openrouter.ai/api/v1
+VISION_IMAGE_URL=https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/bee.jpg
 ```
+
+本示例已经明确是视觉模型请求，因此不再通过 `model_name.startswith("google/")` 或 `:free` 猜测供应商。`VISION_MODEL_NAME`、`VISION_API_KEY` 和 `VISION_API_BASE` 分别明确指定模型、密钥和 API 地址；MiniMax、Google 或其他模型只要由该 API 地址提供，就使用同一套逻辑。
 
 不要把“消息格式正确”和“模型具备视觉能力”混为一件事。
 
@@ -56,13 +61,13 @@ VISION_MODEL_NAME=你的视觉语言模型名称
 
 ### 准确术语
 
-| 术语 | 这里是什么意思 |
-| --- | --- |
-| modality（模态） | 一种信息形式，例如文本、图片、音频或视频。 |
-| multimodal message（多模态消息） | 一条消息的 `content` 中同时放入不同类型的内容块。 |
-| vision-language model（视觉语言模型，VLM） | 能同时处理视觉输入和语言输入，并生成语言结果的模型。 |
-| content block（内容块） | `content` 列表中的一个字典，例如文本块或图片块。 |
-| processor（处理器） | 多模态模型的预处理入口，通常负责图片处理、tokenizer 和输入张量的拼接。 |
+| 术语                                | 这里是什么意思                                  |
+| --------------------------------- | ---------------------------------------- |
+| modality（模态）                      | 一种信息形式，例如文本、图片、音频或视频。                    |
+| multimodal message（多模态消息）         | 一条消息的 `content` 中同时放入不同类型的内容块。           |
+| vision-language model（视觉语言模型，VLM） | 能同时处理视觉输入和语言输入，并生成语言结果的模型。               |
+| content block（内容块）                | `content` 列表中的一个字典，例如文本块或图片块。            |
+| processor（处理器，本章只识别）             | 把原始图片、文字等整理为模型需要的输入。当前调用远程 API，不在本地创建或调用这个对象；后续本地多模态推理再学习其具体类和参数。 |
 
 ### 最关键的对比
 
@@ -117,7 +122,7 @@ response = model.invoke([message])
 4. 第二个块是图片地址，告诉模型要看什么。
 5. `[message]` 是消息列表；即使这里只有一条消息，聊天模型的输入仍然按列表传入。
 6. `model.invoke(...)` 把消息交给模型客户端；客户端负责把 LangChain 消息转换为供应商 API 能理解的请求。
-7. `response.content` 是模型返回的文字，不是图片本身，也不是图片的向量数组。
+7. `response.content` 是响应内容，当前期望得到文字回答；有的响应也会采用内容块列表，不能统一假设为 `str`。它不是图片本身，也不是图片的向量数组。
 
 数据流可以写成：
 
@@ -127,7 +132,7 @@ IMAGE_URL: str
   -> HumanMessage.content: list[dict]
   -> model.invoke([message])
   -> 视觉模型读取图片和文字
-  -> response.content: str
+  -> response.content（当前期望文字，也可能是内容块列表）
 ```
 
 ### 这里的 `model` 从哪里来
@@ -136,17 +141,17 @@ IMAGE_URL: str
 model = build_vision_llm()
 ```
 
-`build_vision_llm()` 是项目普通函数；它读取 `.env`，创建 `ChatDeepSeek` 实例。这个函数不负责把图片转成像素，也不负责判断事实，它只负责构造模型客户端。
+`build_vision_llm()` 是项目普通函数；模块开头的 `load_dotenv()` 先加载 `.env`，这个函数再用 `os.getenv()` 读取环境变量、检查必填值并创建 `ChatOpenAI` 实例。它不负责把图片转成像素，也不负责判断事实，只负责构造模型客户端。
 
 ```python
-return ChatDeepSeek(
+return ChatOpenAI(
     model=model_name,
-    api_base=...,
+    base_url=...,
     api_key=SecretStr(api_key),
 )
 ```
 
-这里的 `ChatDeepSeek` 仍然是上一章见过的聊天模型类。**新变化不是模型类的创建方式，而是传给 `invoke()` 的消息内容形态。**
+这里的 `ChatOpenAI` 是通用的 OpenAI-compatible 聊天模型客户端。**新变化不是模型类的创建方式，而是传给 `invoke()` 的消息内容形态。**
 
 ## 第三关：为什么普通文本模型可能失败
 
@@ -184,8 +189,12 @@ return ChatDeepSeek(
 
 ```dotenv
 VISION_MODEL_NAME=你的视觉语言模型名称
+VISION_API_KEY=你的视觉模型密钥
+VISION_API_BASE=https://openrouter.ai/api/v1
 VISION_IMAGE_URL=https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/bee.jpg
 ```
+
+四项配置都要对应真实值。代码只做非空检查；模型是否支持图片、图片 URL 是否可访问，以及供应商是否接受该消息格式，最终由实际请求验证。
 
 `VISION_MODEL_NAME` 的真实值要以你所用模型供应商的模型列表和模型卡为准。本章不要求背模型名称，也不把一个文本模型强行当视觉模型。
 

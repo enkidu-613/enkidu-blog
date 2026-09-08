@@ -1,6 +1,6 @@
 ---
 title: "08_提示词工程与聊天记忆"
-published: 2026-07-28
+published: 2026-09-08
 description: "想象你和一个人聊天，但对方每句话都失忆："
 tags: ["AI 应用工程", "学习笔记"]
 category: "AI 应用工程"
@@ -128,11 +128,11 @@ chat_history = []
 
 ---
 
-## 三、System Prompt：给 AI "洗脑"
+## 三、System Prompt：设置本次对话的指令
 
 ### 3.1 什么是 System Prompt？
 
-**System Prompt** 是发给 AI 的"隐藏指令"，用户看不到，但会影响 AI 的所有回复。
+**System Prompt（系统提示词）** 是随请求发送的指令消息，用于说明角色、任务与回答要求。它不是训练模型，也不是永久配置；只有实际进入请求上下文才参与本次生成。界面不展示它不代表它能保密，不能把密钥放在里面。
 
 **类比**：
 - System Prompt = 导演给演员的**角色设定**
